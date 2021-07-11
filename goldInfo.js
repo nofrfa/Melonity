@@ -291,7 +291,7 @@ GoldInfoScript.OnScriptLoad = GoldInfoScript.OnGameStart = mainGoldInfo.Load.Ini
 function addGoldHero(entity_killed, heroName, gold, all) {
     let enemyList = mainGoldInfo.enemyList;
     let indexHero = 2783156;
-    if (enemyList.length == 0)
+    if (mainGoldInfo.enemyListLength == 0)
         return;
     for (let index = 0; index < enemyList.length; index++) {
         if (enemyList[index][0].GetEntityName() === heroName) {
