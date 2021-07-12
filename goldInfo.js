@@ -123,7 +123,7 @@ var mainGoldInfo;
         ['radiant_melee_mega', 22], ['radiant_ranged_mega', 22], ['creep_bad_melee_mega', 24], ['lane_dire_ranged_mega', 24]
     ];
     let menuEnableLabel = Menu.AddToggle(['Information', 'Gold Info'], 'EnableMain', false).SetNameLocale("ru", "Включить").SetNameLocale("en", "Enabled");
-    Menu.GetFolder(["Information", "Gold Info"]).SetTip("Сделано: no_frfa\nДанный скрипт будет выводить ВОЗМОЖНОЕ количество золота у вражеских героев\nНа данный момент скрипт учитывает:\n-Убитых крипов\n-Убийство рошана\n-Периодическое золото\n-Ломание вышек(Частично)", "ru");
+    Menu.GetFolder(["Information", "Gold Info"]).SetTip("Сделано: no_frfa\nДанный скрипт будет выводить ВОЗМОЖНОЕ количество золота у вражеских героев\nНа данный момент скрипт учитывает:\n-Убитых крипов\n-Убийство рошана\n-Периодическое золото\n-Ломание вышек(Частично)\n-Подбирание БаунтиРун", "ru");
     Menu.GetFolder(['Information', 'Gold Info']).SetTip('Made by: no_frfa\nsoon', "en");
     menuEnableLabel.OnChange(state => { mainGoldInfo.menuEnable = state.newValue; });
     mainGoldInfo.menuEnable = menuEnableLabel.GetValue();
@@ -135,7 +135,7 @@ var mainGoldInfo;
     let menuHelpButton = Menu.AddButton(['Information', 'Gold Info'], 'Reset Panel Pos', resetPanelPos);
     menuHelpButton.SetTip("Перемещает панель в центр экрана", "ru");
     menuHelpButton.SetTip("Moves the panel to the center of the screen", "en");
-    let menuPanelSettingsLabel_alpha = Menu.AddSlider(['Information', 'Gold Info'], `PanelTransparency`, 0, 255, 255, 1);
+    let menuPanelSettingsLabel_alpha = Menu.AddSlider(['Information', 'Gold Info', 'Panel Settings'], `PanelTransparency`, 0, 255, 255, 1);
     menuPanelSettingsLabel_alpha.SetTip('Управляет прозрачностью панели', "ru");
     menuPanelSettingsLabel_alpha.SetTip('Controls the transparency of the panel', "en");
     menuPanelSettingsLabel_alpha.OnChange(state => { mainGoldInfo.menuPanelSettings_aplha = state.newValue; });
@@ -189,12 +189,13 @@ GoldInfoScript.OnUpdate = () => {
                 enemyHeroes.push(hero);
             }
         }
-        for (let index = 0; index < enemyHeroes.length; index++) {
+        let lengthEH = enemyHeroes.length;
+        for (let index = 0; index < lengthEH; index++) {
             enemyList[index][0] = enemyHeroes[index];
             enemyList[index][1] = 0;
             enemyList[index][3] = enemyHeroes[index].GetImage(true);
         }
-        if (GameRules.GetGameState() === Enum.GameState.GAME_IN_PROGRESS && !GameRules.IsPaused()) {
+        if (GameRules.GetGameState() === Enum.GameState.GAME_IN_PROGRESS) {
             let gameTime = Number((GameRules.GetGameTime() - GameRules.GetPreGameStartTime()).toFixed());
             let timeForGold = 0.6;
             let goldStage1 = 0;
@@ -219,7 +220,7 @@ GoldInfoScript.OnUpdate = () => {
                 timeForGold = 2.13;
             }
             let goldTick = gameTime / 0.6 * timeForGold;
-            if (enemyHeroes.length > 0) {
+            if (lengthEH > 0) {
                 let heroesSize = 0;
                 for (let heroOfList of enemyList) {
                     if (heroOfList[0] == null)
@@ -232,15 +233,17 @@ GoldInfoScript.OnUpdate = () => {
                     }
                     heroOfList[1] = 600 + goldTick + heroOfList[2] - inventoryCost - goldStage1 - goldStage2 - goldStage3 - goldStage4;
                 }
-                console.log(enemyList[2][2] + ' - ' + mainGoldInfo.bountyCost);
                 mainGoldInfo.enemyListLength = heroesSize;
             }
         }
         if (mainGoldInfo.menuCanPanelMove &&
-            Input.IsCursorInRect(mainGoldInfo.posX, mainGoldInfo.posY, 88, 34 * mainGoldInfo.enemyListLength, Enum.ContentAlign.CenterXBottom) &&
-            Input.IsCursorInRect(mainGoldInfo.posX, mainGoldInfo.posY, 88, 18, Enum.ContentAlign.CenterXTop) ||
             Input.IsKeyDown(Enum.ButtonCode.KEY_LCONTROL) &&
-                Input.IsKeyDownOnce(Enum.ButtonCode.MOUSE_LEFT)) {
+            Input.IsKeyDownOnce(Enum.ButtonCode.MOUSE_LEFT) &&
+            Input.IsCursorInRect(mainGoldInfo.posX, mainGoldInfo.posY, 88, 34 * mainGoldInfo.enemyListLength, Enum.ContentAlign.CenterXBottom) ||
+            mainGoldInfo.menuCanPanelMove &&
+                Input.IsKeyDown(Enum.ButtonCode.KEY_LCONTROL) &&
+                Input.IsKeyDownOnce(Enum.ButtonCode.MOUSE_LEFT) &&
+                Input.IsCursorInRect(mainGoldInfo.posX, mainGoldInfo.posY, 88, 18, Enum.ContentAlign.CenterXTop)) {
             mainGoldInfo.canMove = true;
         }
         else if (!Input.IsKeyDown(Enum.ButtonCode.KEY_LCONTROL) || !Input.IsKeyDown(Enum.ButtonCode.MOUSE_LEFT))
