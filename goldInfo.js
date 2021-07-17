@@ -222,8 +222,9 @@ GoldInfoScript.OnUpdate = () => {
                     enemyHeroes.push(hero);
                 }
             }
-            let lengthEH = enemyHeroes.length;
-            for (let index = 0; index < lengthEH; index++) {
+            if (enemyHeroes == null)
+                return;
+            for (let index = 0; index < enemyHeroes.length; index++) {
                 enemyList[index][0] = enemyHeroes[index];
                 enemyList[index][1] = 0;
                 enemyList[index][3] = enemyHeroes[index].GetImage(true);
@@ -255,12 +256,16 @@ GoldInfoScript.OnUpdate = () => {
                     goldStage4 = gameTime * 2 * timeForGold - goldStage1 - goldStage2 - goldStage3;
                     timeForGold = gameTime * 2.13;
                 }
-                if (lengthEH > 0) {
-                    let heroesSize = 0;
+                let heroesSize = 0;
+                for (let check of enemyList) {
+                    if (check[0] != null)
+                        heroesSize++;
+                }
+                mainGoldInfo.enemyListLength = heroesSize;
+                if (heroesSize > 0) {
                     for (let heroOfList of enemyList) {
                         if (heroOfList[0] == null)
                             continue;
-                        heroesSize++;
                         let inventory = heroOfList[0].GetItems(false);
                         let inventoryCost = 0;
                         for (let itemInInv of inventory) {
@@ -268,7 +273,6 @@ GoldInfoScript.OnUpdate = () => {
                         }
                         heroOfList[1] = 700 + timeForGold + heroOfList[2] - inventoryCost - goldStage1 - goldStage2 - goldStage3 - goldStage4;
                     }
-                    mainGoldInfo.enemyListLength = heroesSize;
                     for (let index = 0; index < enemyList.length; index++) {
                         if (enemyList[index][0] != null)
                             Config.WriteInt('GoldInfo', `index${index.toString()}`, enemyList[index][2]);
@@ -300,6 +304,8 @@ GoldInfoScript.OnFireEvent = (event) => {
         if (event.name === 'entity_killed') {
             let attacker = EntityList.GetByIndex(event.GetInt('entindex_attacker'));
             let killed = EntityList.GetByIndex(event.GetInt('entindex_killed'));
+            if (killed == null)
+                return;
             if (killed.GetModelName().split('/', 2)[1] === 'creeps' && attacker.GetEntityName().replace('npc_dota_hero_', 'ISHERO_').split('_')[0] === 'ISHERO' && !attacker.IsSameTeam(mainGoldInfo.myHero))
                 addGoldHero(killed, attacker.GetEntityName());
         }
@@ -308,7 +314,7 @@ GoldInfoScript.OnFireEvent = (event) => {
                 addGoldHero(null, null, event.GetInt('gold'), true);
         }
         if (event.name === 'dota_player_kill') {
-            if (event.GetInt('neutral') || (event.GetInt('greevil')))
+            if (event.GetInt('neutral') == 1 || event.GetInt('greevil') == 1)
                 return;
             EntityList.GetPlayersList().forEach((player) => {
                 if (player.GetPlayerID() == event.GetInt('killer1_userid')) {
