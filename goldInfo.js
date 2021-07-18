@@ -215,7 +215,6 @@ GoldInfoScript.OnUpdate = () => {
     if (mainGoldInfo.gameStart) {
         if (mainGoldInfo.menuCalculate) {
             let heroes = EntitySystem.GetHeroesList();
-            let enemyList = mainGoldInfo.enemyList;
             let enemyHeroes = [];
             for (let hero of heroes) {
                 if (!hero.IsSameTeam(mainGoldInfo.myHero) && !hero.IsIllusion() && !hero.IsMeepoClone()) {
@@ -225,9 +224,9 @@ GoldInfoScript.OnUpdate = () => {
             if (enemyHeroes == null)
                 return;
             for (let index = 0; index < enemyHeroes.length; index++) {
-                enemyList[index][0] = enemyHeroes[index];
-                enemyList[index][1] = 0;
-                enemyList[index][3] = enemyHeroes[index].GetImage(true);
+                mainGoldInfo.enemyList[index][0] = enemyHeroes[index];
+                mainGoldInfo.enemyList[index][1] = 0;
+                mainGoldInfo.enemyList[index][3] = enemyHeroes[index].GetImage(true);
             }
             if (GameRules.GetGameState() === Enum.GameState.GAME_IN_PROGRESS) {
                 let gameTime = Number((GameRules.GetGameTime() - GameRules.GetPreGameStartTime()).toFixed()) - 90;
@@ -257,13 +256,13 @@ GoldInfoScript.OnUpdate = () => {
                     timeForGold = gameTime * 2.13;
                 }
                 let heroesSize = 0;
-                for (let check of enemyList) {
+                for (let check of mainGoldInfo.enemyList) {
                     if (check[0] != null)
                         heroesSize++;
                 }
                 mainGoldInfo.enemyListLength = heroesSize;
                 if (heroesSize > 0) {
-                    for (let heroOfList of enemyList) {
+                    for (let heroOfList of mainGoldInfo.enemyList) {
                         if (heroOfList[0] == null)
                             continue;
                         let inventory = heroOfList[0].GetItems(false);
@@ -273,9 +272,9 @@ GoldInfoScript.OnUpdate = () => {
                         }
                         heroOfList[1] = 700 + timeForGold + heroOfList[2] - inventoryCost - goldStage1 - goldStage2 - goldStage3 - goldStage4;
                     }
-                    for (let index = 0; index < enemyList.length; index++) {
-                        if (enemyList[index][0] != null)
-                            Config.WriteInt('GoldInfo', `index${index.toString()}`, enemyList[index][2]);
+                    for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
+                        if (mainGoldInfo.enemyList[index][0] != null)
+                            Config.WriteInt('GoldInfo', `index${index.toString()}`, mainGoldInfo.enemyList[index][2]);
                     }
                 }
             }
@@ -359,13 +358,12 @@ GoldInfoScript.OnScriptLoad = GoldInfoScript.OnGameStart = mainGoldInfo.Load.Ini
 function addGoldHero(entity_killed, heroName, gold, all) {
     if (mainGoldInfo.enemyListLength == 0)
         return;
-    let enemyList = mainGoldInfo.enemyList;
     let indexHero = 2783156;
     if (!all) {
-        for (let index = 0; index < enemyList.length; index++) {
-            if (enemyList[index][0] == null)
+        for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
+            if (mainGoldInfo.enemyList[index][0] == null)
                 continue;
-            if (enemyList[index][0].GetEntityName() === heroName) {
+            if (mainGoldInfo.enemyList[index][0].GetEntityName() === heroName) {
                 indexHero = index;
                 break;
             }
@@ -376,7 +374,7 @@ function addGoldHero(entity_killed, heroName, gold, all) {
         }
     }
     if (entity_killed != null) {
-        if (entity_killed.IsSameTeam(enemyList[indexHero][0]))
+        if (entity_killed.IsSameTeam(mainGoldInfo.enemyList[indexHero][0]))
             return;
         let entName = entity_killed.GetModelName();
         let _name = entName.replace('models/creeps/', '').replace('.vmdl', '');
@@ -395,24 +393,24 @@ function addGoldHero(entity_killed, heroName, gold, all) {
     }
     if (gold) {
         if (all) {
-            for (let var0 of enemyList) {
+            for (let var0 of mainGoldInfo.enemyList) {
                 var0[2] += gold;
             }
         }
         else {
-            enemyList[indexHero][2] += gold;
+            mainGoldInfo.enemyList[indexHero][2] += gold;
         }
     }
     function addGoldCreeps(var1, var2) {
         for (let index in var2) {
             if (var1[var1.length - 1] === var2[index][0]) {
-                enemyList[indexHero][2] += var2[index][1];
+                mainGoldInfo.enemyList[indexHero][2] += var2[index][1];
             }
         }
     }
     function addGoldRoshan() {
-        enemyList[indexHero][2] += 245;
-        for (let var0 of enemyList) {
+        mainGoldInfo.enemyList[indexHero][2] += 245;
+        for (let var0 of mainGoldInfo.enemyList) {
             var0[2] += 135;
         }
     }
