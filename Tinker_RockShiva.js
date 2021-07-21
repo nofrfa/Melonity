@@ -164,9 +164,10 @@ tinker_RocketShiva.OnUpdate = () => {
                             item_blink = item;
                     }
                 }
-                if (skill_rocket.CanCast())
+                let enemyInRadius = rockShiva.myHero.GetHeroesInRadius(2500 + addRadius, Enum.TeamType.TEAM_ENEMY).length;
+                if (skill_rocket.CanCast() && enemyInRadius > 0)
                     skill_rocket.CastNoTarget();
-                else if (CanCastCD(skill_rocket, rockShiva.myHero) && !CanCastMana(skill_rocket, rockShiva.myHero) && rockShiva.menuManaItemNeeded)
+                else if (CanCastCD(skill_rocket, rockShiva.myHero) && !CanCastMana(skill_rocket, rockShiva.myHero) && rockShiva.menuManaItemNeeded && enemyInRadius > 0)
                     UseObject(skill_rocket);
                 if (skill_rearm.CanCast()) {
                     skill_rearm.CastNoTarget();
