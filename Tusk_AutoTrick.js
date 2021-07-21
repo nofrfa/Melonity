@@ -86,10 +86,10 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/autoTaskWall.ts":
-/*!*****************************!*\
-  !*** ./src/autoTaskWall.ts ***!
-  \*****************************/
+/***/ "./src/Tusk_AutoTrick.ts":
+/*!*******************************!*\
+  !*** ./src/Tusk_AutoTrick.ts ***!
+  \*******************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -100,10 +100,13 @@ var TuskIceShards;
     TuskIceShards.gameStart = false;
     TuskIceShards.menuFunc = false;
     TuskIceShards.Team = 0;
-    let menuLabel = Menu.AddToggle(['Heroes', 'Strength', 'Tusk', 'Trick'], 'Включить', false).SetNameLocale('Трюк', "ru").SetTip('CustomScript');
+    let menuLabel = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Strength', 'Tusk', 'Trick'], 'Включить', false).SetNameLocale('Трюк', "ru").SetTip('CustomScript');
     menuLabel.OnChange(state => { TuskIceShards.menuFunc = state.newValue; });
     TuskIceShards.menuFunc = menuLabel.GetValue();
-    TuskIceShards.MenuKeyBind = Menu.AddKeyBind(['Heroes', 'Strength', 'Tusk', 'Trick'], 'Клавиша активации', Enum.ButtonCode.KEY_NONE);
+    TuskIceShards.MenuKeyBind = Menu.AddKeyBind(['Custom Scripts', 'Heroes', 'Strength', 'Tusk', 'Trick'], 'Клавиша активации', Enum.ButtonCode.KEY_NONE);
+    Menu.SetImage(['Custom Scripts', 'Heroes'], "~/menu/40x40/heroes.png");
+    Menu.SetImage(['Custom Scripts', 'Heroes', 'Strength'], "~/menu/40x40/strength.png");
+    Menu.SetImage(['Custom Scripts', 'Heroes', 'Strength', 'Tusk'], "panorama/images/heroes/icons/npc_dota_hero_tusk_png.vtex_c");
     let Load;
     (function (Load) {
         function Init() {
@@ -141,13 +144,13 @@ RegisterScript(AutoIceShardsTusk);
 /***/ }),
 
 /***/ 0:
-/*!***********************************!*\
-  !*** multi ./src/autoTaskWall.ts ***!
-  \***********************************/
+/*!*************************************!*\
+  !*** multi ./src/Tusk_AutoTrick.ts ***!
+  \*************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Minority\scripts\src\autoTaskWall.ts */"./src/autoTaskWall.ts");
+module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Minority\scripts\src\Tusk_AutoTrick.ts */"./src/Tusk_AutoTrick.ts");
 
 
 /***/ })
