@@ -86,10 +86,10 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/goldInfo.ts":
-/*!*************************!*\
-  !*** ./src/goldInfo.ts ***!
-  \*************************/
+/***/ "./src/Information_GoldInfo.ts":
+/*!*************************************!*\
+  !*** ./src/Information_GoldInfo.ts ***!
+  \*************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -123,30 +123,31 @@ var mainGoldInfo;
         ['creep_bad_melee', 38], ['radiant_melee', 38], ['lane_dire_ranged', 53], ['radiant_ranged', 53],
         ['radiant_melee_mega', 22], ['radiant_ranged_mega', 22], ['creep_bad_melee_mega', 24], ['lane_dire_ranged_mega', 24]
     ];
-    let menuCalcLabel = Menu.AddToggle(['Information', 'Gold Info'], 'Calculation', true).SetNameLocale("ru", "Расчёт золота").SetNameLocale("en", "Calculation Gold");
-    Menu.GetFolder(["Information", "Gold Info"]).SetTip("Кастомный скрипт\nСделано: no_frfa\nДанный скрипт будет выводить ВОЗМОЖНОЕ количество золота у вражеских героев\nНа данный момент скрипт учитывает:\n-Убитых крипов\n-Убийство рошана\n-Периодическое золото\n-Ломание вышек(Частично)\n-Подбирание БаунтиРун\n-Убийство героев(Частично)", "ru");
-    Menu.GetFolder(['Information', 'Gold Info']).SetTip('Custom Script\nMade by: no_frfa\nSOON', "en");
+    let menuCalcLabel = Menu.AddToggle(['Custom Scripts', 'Information', 'Gold Info'], 'Calculation Gold', true).SetNameLocale("ru", "Расчёт золота");
+    Menu.GetFolder(['Custom Scripts', 'Information', 'Gold Info']).SetTip("Кастомный скрипт\nСделано: no_frfa\nДанный скрипт будет выводить ВОЗМОЖНОЕ количество золота у вражеских героев\nНа данный момент скрипт учитывает:\n-Убитых крипов\n-Убийство рошана\n-Периодическое золото\n-Ломание вышек(Частично)\n-Подбирание БаунтиРун\n-Убийство героев(Частично)", "ru");
+    Menu.GetFolder(['Custom Scripts', 'Information', 'Gold Info']).SetTip('Custom Script\nMade by: no_frfa\nSOON', "en");
     menuCalcLabel.SetTip('Если включено, скрипт будет рассчитывать вражеское золото (Если будет включено посередине игры, значение золота будет неверным)', 'ru');
     menuCalcLabel.SetTip('SOON', 'en');
     menuCalcLabel.OnChange(state => { mainGoldInfo.menuCalculate = state.newValue; });
     mainGoldInfo.menuCalculate = menuCalcLabel.GetValue();
-    let menuRenderLabel = Menu.AddToggle(['Information', 'Gold Info'], 'Render', false).SetNameLocale("ru", "Отрисовка панели").SetNameLocale("en", "Render Panel");
+    Menu.SetImage(['Custom Scripts', 'Information'], '~/menu/40x40/info.png');
+    let menuRenderLabel = Menu.AddToggle(['Custom Scripts', 'Information', 'Gold Info'], 'Render Panel', false).SetNameLocale("ru", "Отрисовка панели");
     menuRenderLabel.OnChange(state => { mainGoldInfo.menuRender = state.newValue; });
     mainGoldInfo.menuRender = menuRenderLabel.GetValue();
-    let menuCanPanelMoveLabel = Menu.AddToggle(['Information', 'Gold Info'], 'MovePanel', false).SetNameLocale("ru", "Перемещение панели").SetNameLocale("en", "Moving the panel");
+    let menuCanPanelMoveLabel = Menu.AddToggle(['Custom Scripts', 'Information', 'Gold Info'], 'Moving the panel', false).SetNameLocale("ru", "Перемещение панели");
     menuCanPanelMoveLabel.SetTip("Перемещение панели 'Gold Info' при зажатии Ctrl+ЛКМ", "ru");
     menuCanPanelMoveLabel.SetTip("Moving the 'Gold Info' panel when holding Ctrl + LMB", "en");
     menuCanPanelMoveLabel.OnChange(state => { mainGoldInfo.menuCanPanelMove = state.newValue; });
     mainGoldInfo.menuCanPanelMove = menuCanPanelMoveLabel.GetValue();
-    let menuPanelSettingsLabel_alpha = Menu.AddSlider(['Information', 'Gold Info', 'Panel Settings'], `PanelTransparency`, 0, 255, 255, 1);
+    let menuPanelSettingsLabel_alpha = Menu.AddSlider(['Custom Scripts', 'Information', 'Gold Info', 'Panel Settings'], `PanelTransparency`, 0, 255, 255, 1);
     menuPanelSettingsLabel_alpha.SetTip('Управляет прозрачностью панели', "ru");
     menuPanelSettingsLabel_alpha.SetTip('Controls the transparency of the panel', "en");
     menuPanelSettingsLabel_alpha.OnChange(state => { mainGoldInfo.menuPanelSettings_aplha = state.newValue; });
     mainGoldInfo.menuPanelSettings_aplha = menuPanelSettingsLabel_alpha.GetValue();
-    let menuHelpButton_panel = Menu.AddButton(['Information', 'Gold Info', 'Help'], 'Reset Panel', () => { fixButton(); });
+    let menuHelpButton_panel = Menu.AddButton(['Custom Scripts', 'Information', 'Gold Info', 'Help'], 'Reset Panel', () => { fixButton(); });
     menuHelpButton_panel.SetTip("Используйте, если столкнулись с какой-то проблемой отрисовки панели", "ru");
     menuHelpButton_panel.SetTip("SOON", "en");
-    mainGoldInfo.menuHelpButton_stat = Menu.AddButton(['Information', 'Gold Info', 'Help'], 'Reset Stat', () => { fixStat(); });
+    mainGoldInfo.menuHelpButton_stat = Menu.AddButton(['Custom Scripts', 'Information', 'Gold Info', 'Help'], 'Reset Stat', () => { fixStat(); });
     mainGoldInfo.menuHelpButton_stat.SetTip("Используйте, если хотите сбросить статистику у героев \nДанная кнопка может полностью сломать расчёт золота у врагов -> нажмите второй раз для подтверждения (После 15 секунд, кнопка ResetStat вернётся)", "ru");
     mainGoldInfo.menuHelpButton_stat.SetTip("SOON", "en");
     let Load;
@@ -433,14 +434,14 @@ function fixButton() {
 }
 function fixStat() {
     mainGoldInfo.menuHelpButton_stat.RemoveOption();
-    mainGoldInfo.menuHelpButton_stat = Menu.AddButton(['Information', 'Gold Info', 'Help'], 'Confirm', () => { confirmAction(); });
+    mainGoldInfo.menuHelpButton_stat = Menu.AddButton(['Custom Scripts', 'Information', 'Gold Info', 'Help'], 'Confirm', () => { confirmAction(); });
     let time = 15;
     let updaterTip = setInterval(() => {
         time--;
     }, 1000);
     let timer = setTimeout(() => {
         mainGoldInfo.menuHelpButton_stat.RemoveOption();
-        mainGoldInfo.menuHelpButton_stat = Menu.AddButton(['Information', 'Gold Info', 'Help'], 'Reset Stat', () => { fixStat(); });
+        mainGoldInfo.menuHelpButton_stat = Menu.AddButton(['Custom Scripts', 'Information', 'Gold Info', 'Help'], 'Reset Stat', () => { fixStat(); });
         mainGoldInfo.menuHelpButton_stat.SetTip("Используйте, если хотите сбросить статистику у героев \nТак как данная кнопка может полностью сломать расчёт золота у врагов - нажмите второй раз для подтверждения (После 15 секунд, кнопка ResetStat вернётся)", "ru");
         mainGoldInfo.menuHelpButton_stat.SetTip("SOON", "en");
         clearInterval(updaterTip);
@@ -449,7 +450,7 @@ function fixStat() {
         clearTimeout(timer);
         clearInterval(updaterTip);
         mainGoldInfo.menuHelpButton_stat.RemoveOption();
-        mainGoldInfo.menuHelpButton_stat = Menu.AddButton(['Information', 'Gold Info', 'Help'], 'Reset Stat', () => { fixStat(); });
+        mainGoldInfo.menuHelpButton_stat = Menu.AddButton(['Custom Scripts', 'Information', 'Gold Info', 'Help'], 'Reset Stat', () => { fixStat(); });
         mainGoldInfo.menuHelpButton_stat.SetTip("Используйте, если хотите сбросить статистику у героев \nТак как данная кнопка может полностью сломать расчёт золота у врагов - нажмите второй раз для подтверждения (После 15 секунд, кнопка ResetStat вернётся)", "ru");
         mainGoldInfo.menuHelpButton_stat.SetTip("SOON", "en");
         for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
@@ -466,13 +467,13 @@ RegisterScript(GoldInfoScript);
 /***/ }),
 
 /***/ 0:
-/*!*******************************!*\
-  !*** multi ./src/goldInfo.ts ***!
-  \*******************************/
+/*!*******************************************!*\
+  !*** multi ./src/Information_GoldInfo.ts ***!
+  \*******************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Minority\scripts\src\goldInfo.ts */"./src/goldInfo.ts");
+module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Minority\scripts\src\Information_GoldInfo.ts */"./src/Information_GoldInfo.ts");
 
 
 /***/ })
