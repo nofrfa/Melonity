@@ -99,10 +99,8 @@ var tempestDoubleTimer;
     tempestDoubleTimer.needHero = 'npc_dota_hero_arc_warden';
     tempestDoubleTimer.gameStart = false;
     tempestDoubleTimer.menuWork = false;
-    tempestDoubleTimer.cloneCreate = false;
-    tempestDoubleTimer.menuCanPanelMove = false;
+    tempestDoubleTimer.menuCanMove = false;
     tempestDoubleTimer.canMove = false;
-    tempestDoubleTimer.durationSkill = -1;
     tempestDoubleTimer.posX = Config.ReadFloat("TempestTimer", "posX", Renderer.GetScreenSize()[0] / 2 + 200);
     tempestDoubleTimer.posY = Config.ReadFloat("TempestTimer", "posY", Renderer.GetScreenSize()[1] / 2);
     tempestDoubleTimer.location = ['Near Tempest Double', 'Custom Pos', 'Both'];
@@ -111,16 +109,16 @@ var tempestDoubleTimer;
     tempestDoubleTimer.font = Renderer.LoadFont('Arial', Config.ReadInt('TempestTimer', 'textSize', 16), Enum.FontWeight.LIGHT, Enum.FontFlags.OUTLINE);
     let menuWork_Lable = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Agility', 'Arc Warden', 'Tempest Double', 'Timer'], 'Enabled', false).SetNameLocale("ru", "Включить");
     menuWork_Lable.SetTip('Показывает таймер до исчезновения Tempest Double', 'ru');
-    menuWork_Lable.SetTip('SOON', 'en');
+    menuWork_Lable.SetTip('Shows Tempest Double fade timer', 'en');
     menuWork_Lable.OnChange(state => { tempestDoubleTimer.menuWork = state.newValue; });
     tempestDoubleTimer.menuWork = menuWork_Lable.GetValue();
     tempestDoubleTimer.menuCombo = Menu.AddComboBox(['Custom Scripts', 'Heroes', 'Agility', 'Arc Warden', 'Tempest Double', 'Timer'], 'Where to display', tempestDoubleTimer.location, 0).SetNameLocale("ru", 'Где отображать').OnChange(state => tempestDoubleTimer.menuCombo = state.newValue).GetValue();
-    let menuCanPanelMoveLabel = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Agility', 'Arc Warden', 'Tempest Double', 'Timer'], 'MovePanel', false).SetNameLocale("ru", "Перемещение панели").SetNameLocale("en", "Moving the panel");
+    let menuCanPanelMoveLabel = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Agility', 'Arc Warden', 'Tempest Double', 'Timer'], 'Moving the panel', false).SetNameLocale("ru", "Перемещение таймера");
     menuCanPanelMoveLabel.SetTip("Перемещение таймера при зажатии Ctrl+ЛКМ (Своя позиция)", "ru");
     menuCanPanelMoveLabel.SetTip("Moving the timer when holding Ctrl+LMB (only Custom Pos)", "en");
-    menuCanPanelMoveLabel.OnChange(state => { tempestDoubleTimer.menuCanPanelMove = state.newValue; });
-    tempestDoubleTimer.menuCanPanelMove = menuCanPanelMoveLabel.GetValue();
-    let menuTextSize_Label = Menu.AddSlider(['Custom Scripts', 'Heroes', 'Agility', 'Arc Warden', 'Tempest Double', 'Timer'], `Text Size`, 1, 32, 16, 1);
+    menuCanPanelMoveLabel.OnChange(state => { tempestDoubleTimer.menuCanMove = state.newValue; });
+    tempestDoubleTimer.menuCanMove = menuCanPanelMoveLabel.GetValue();
+    let menuTextSize_Label = Menu.AddSlider(['Custom Scripts', 'Heroes', 'Agility', 'Arc Warden', 'Tempest Double', 'Timer'], `Text Size`, 1, 32, 16, 1).SetNameLocale("ru", 'Размер текста');
     menuTextSize_Label.OnChange(state => {
         tempestDoubleTimer.font = Renderer.LoadFont('Arial', state.newValue, Enum.FontWeight.LIGHT, Enum.FontFlags.OUTLINE);
         Config.WriteInt('TempestTimer', 'textSize', state.newValue);
@@ -136,6 +134,17 @@ var tempestDoubleTimer;
                 tempestDoubleTimer.gameStart = true;
                 tempestDoubleTimer.myHero = EntitySystem.GetLocalHero();
                 tempestDoubleTimer.myPlayer = EntitySystem.GetLocalPlayer();
+                if (Config.ReadFloat("TempestTimer", "cloneCreated", 0)) {
+                    let duration = Config.ReadFloat("TempestTimer", "timer", 0);
+                    let timeScale = Number(ConVar.GetValue("host_timescale"));
+                    let timer_r = setInterval(() => {
+                        if (tempestDoubleTimer.gameStart && tempestDoubleTimer.menuWork)
+                            Config.WriteFloat("TempestTimer", "timer", duration -= 0.1);
+                    }, 100 / timeScale);
+                    setTimeout(() => {
+                        clearInterval(timer_r);
+                    }, (duration * 1000 - 100) / timeScale);
+                }
             }
             if (!tempestDoubleTimer.myHero || !tempestDoubleTimer.myHero.IsExist() || tempestDoubleTimer.myHero.GetUnitName() !== tempestDoubleTimer.needHero) {
                 tempestDoubleTimer.gameStart = false;
@@ -147,9 +156,10 @@ var tempestDoubleTimer;
 })(tempestDoubleTimer || (tempestDoubleTimer = {}));
 arcWarden_tempestDouble.OnUpdate = () => {
     if (tempestDoubleTimer.gameStart && tempestDoubleTimer.menuWork) {
-        if (tempestDoubleTimer.menuCanPanelMove) {
+        if (tempestDoubleTimer.menuCanMove) {
             if (Input.IsKeyDown(Enum.ButtonCode.KEY_LCONTROL) && Input.IsKeyDownOnce(Enum.ButtonCode.MOUSE_LEFT)) {
-                if (Input.IsCursorInRect(tempestDoubleTimer.posX, tempestDoubleTimer.posY, 80, Config.Read('TempestTimer', 'textSize', 16), Enum.ContentAlign.CenterXTop)) {
+                let sizeText = Renderer.GetTextSize(tempestDoubleTimer.font, `${Config.ReadFloat("TempestTimer", "timer", 0).toFixed(1)}сек}сек`);
+                if (Input.IsCursorInRect(tempestDoubleTimer.posX, tempestDoubleTimer.posY, sizeText[0], sizeText[1], Enum.ContentAlign.CenterXTop)) {
                     tempestDoubleTimer.canMove = true;
                 }
             }
@@ -166,23 +176,25 @@ arcWarden_tempestDouble.OnUpdate = () => {
 };
 arcWarden_tempestDouble.OnDraw = () => {
     if (tempestDoubleTimer.gameStart && tempestDoubleTimer.menuWork) {
-        if (tempestDoubleTimer.cloneCreate) {
+        if (Config.ReadInt("TempestTimer", "cloneCreated", 0)) {
             Renderer.SetDrawColor(255, 255, 255, 255);
+            let clone = EntityList.GetByIndex(Config.ReadInt('TempestTimer', 'cloneIndex', -1));
+            if (clone == null)
+                return;
             if (tempestDoubleTimer.menuCombo == 0) {
-                let [x, y, isOnScreen] = Renderer.WorldToScreen(tempestDoubleTimer.clone.GetAbsOrigin().add(new Vector(0, 0, tempestDoubleTimer.clone.GetHealthBarOffset())));
-                if (!isOnScreen || !tempestDoubleTimer.clone.IsExist())
+                let [x, y, isOnScreen] = Renderer.WorldToScreen(clone.GetAbsOrigin().add(new Vector(0, 0, clone.GetHealthBarOffset())));
+                if (!isOnScreen || !clone.IsExist())
                     return;
-                Renderer.DrawText(tempestDoubleTimer.font, x, y - 30, `${tempestDoubleTimer.durationSkill.toFixed(1)}сек`, 0, Enum.ContentAlign.CenterXTop);
+                Renderer.DrawText(tempestDoubleTimer.font, x, y - 30, `${Config.ReadFloat("TempestTimer", "timer", 0).toFixed(1)}сек`, 0, Enum.ContentAlign.CenterXTop);
             }
-            if (tempestDoubleTimer.menuCombo == 1) {
-                Renderer.DrawText(tempestDoubleTimer.font, tempestDoubleTimer.posX, tempestDoubleTimer.posY, `${tempestDoubleTimer.durationSkill.toFixed(1)}сек`, 0, Enum.ContentAlign.CenterXTop);
-            }
+            if (tempestDoubleTimer.menuCombo == 1)
+                Renderer.DrawText(tempestDoubleTimer.font, tempestDoubleTimer.posX, tempestDoubleTimer.posY, `${Config.ReadFloat("TempestTimer", "timer", 0).toFixed(1)}сек`, 0, Enum.ContentAlign.CenterXTop);
             if (tempestDoubleTimer.menuCombo == 2) {
-                let [x, y, isOnScreen] = Renderer.WorldToScreen(tempestDoubleTimer.clone.GetAbsOrigin().add(new Vector(0, 0, tempestDoubleTimer.clone.GetHealthBarOffset())));
-                if (!isOnScreen || !tempestDoubleTimer.clone.IsExist())
+                let [x, y, isOnScreen] = Renderer.WorldToScreen(clone.GetAbsOrigin().add(new Vector(0, 0, clone.GetHealthBarOffset())));
+                if (!isOnScreen || !clone.IsExist())
                     return;
-                Renderer.DrawText(tempestDoubleTimer.font, x, y - 30, `${tempestDoubleTimer.durationSkill.toFixed(1)}сек`, 0, Enum.ContentAlign.CenterXTop);
-                Renderer.DrawText(tempestDoubleTimer.font, tempestDoubleTimer.posX, tempestDoubleTimer.posY, `${tempestDoubleTimer.durationSkill.toFixed(1)}сек`, 0, Enum.ContentAlign.CenterXTop);
+                Renderer.DrawText(tempestDoubleTimer.font, x, y - 30, `${Config.ReadFloat("TempestTimer", "timer", 0).toFixed(1)}сек`, 0, Enum.ContentAlign.CenterXTop);
+                Renderer.DrawText(tempestDoubleTimer.font, tempestDoubleTimer.posX, tempestDoubleTimer.posY, `${Config.ReadFloat("TempestTimer", "timer", 0).toFixed(1)}сек`, 0, Enum.ContentAlign.CenterXTop);
             }
         }
     }
@@ -196,11 +208,11 @@ arcWarden_tempestDouble.OnModifierCreate = (entity, modifier) => {
                 let timeScale = Number(ConVar.GetValue("host_timescale"));
                 if (tempestDoubleTimer.myHero.GetTalentsMask() & Enum.Talents.TALENT_7)
                     duration += 12;
-                tempestDoubleTimer.durationSkill = duration;
-                tempestDoubleTimer.clone = entity;
-                tempestDoubleTimer.cloneCreate = true;
+                let clone = entity;
+                Config.WriteInt("TempestTimer", "cloneCreated", 1);
+                Config.WriteInt("TempestTimer", "cloneIndex", clone.GetIndex());
                 tempestDoubleTimer.timer = setInterval(() => {
-                    tempestDoubleTimer.durationSkill -= 0.1;
+                    Config.WriteFloat("TempestTimer", "timer", duration -= 0.1);
                 }, 100 / timeScale);
             }
         }
@@ -211,17 +223,18 @@ arcWarden_tempestDouble.OnModifierDestroy = (entity, modifier) => {
         if (modifier.GetName() === 'modifier_kill') {
             //@ts-ignore
             if (entity.GetUnitName() === 'npc_dota_hero_arc_warden') {
-                tempestDoubleTimer.cloneCreate = false;
-                clearInterval(tempestDoubleTimer.timer);
-                tempestDoubleTimer.durationSkill = -1;
+                Config.WriteInt("TempestTimer", "cloneCreated", 0);
+                if (tempestDoubleTimer.timer !== undefined)
+                    clearInterval(tempestDoubleTimer.timer);
+                Config.WriteInt("TempestTimer", "cloneIndex", -1);
             }
         }
     }
 };
 arcWarden_tempestDouble.OnGameEnd = () => {
     tempestDoubleTimer.gameStart = false;
-    tempestDoubleTimer.clone = null;
-    tempestDoubleTimer.durationSkill = -1;
+    Config.WriteInt("TempestTimer", "cloneCreated", 0);
+    Config.WriteInt("TempestTimer", "cloneIndex", -1);
     clearInterval(tempestDoubleTimer.timer);
 };
 arcWarden_tempestDouble.OnScriptLoad = arcWarden_tempestDouble.OnGameStart = tempestDoubleTimer.Load.Init;
