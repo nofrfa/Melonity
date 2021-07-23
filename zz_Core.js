@@ -86,30 +86,65 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/Core.ts":
-/*!*********************!*\
-  !*** ./src/Core.ts ***!
-  \*********************/
+/***/ "./src/zz_Core.ts":
+/*!************************!*\
+  !*** ./src/zz_Core.ts ***!
+  \************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
+let zz_Core = {};
+let versions = [
+    ['ArcWarden', 'MagneticFieldTimer', 'release-1.0.1'],
+    ['ArcWarden', 'TempestTimer', 'release-1.0.0'],
+    ['Information', 'GoldInfo', 'beta-1.1.4'],
+    ['Tinker', 'RockShiva', 'beta-1.1.0'],
+    ['Tusk', 'AutoTrick', 'release-1.0.1']
+];
+versions.sort((oldElement, newElement) => oldElement[0] > newElement[0] ? 1 : -1);
+let drawReadMe = Menu.AddButton(['Custom Scripts', 'Other'], 'ReadMe', () => { drawRM(); });
+let title = Renderer.LoadFont('Arial', 34, Enum.FontWeight.BOLD, Enum.FontFlags.ANTIALIAS);
+let font = Renderer.LoadFont('Arial', 24, Enum.FontWeight.LIGHT, Enum.FontFlags.OUTLINE);
+let screenSize = Renderer.GetScreenSize();
+let distance = Renderer.GetTextSize(title, 'Script name')[0] + 50;
+let time = 5;
+function drawRM() {
+    for (let index = 0; index < versions.length; index++) {
+        if (Renderer.GetTextSize(font, versions[index][1])[0] > Renderer.GetTextSize(title, 'Script name')[0] + 50) {
+            distance = Renderer.GetTextSize(font, versions[index][1])[0] + 50;
+        }
+    }
+    //Renderer.SetDrawColor(43, 43, 58, 255)
+    //Renderer.DrawFilledRect(screenSize[0]/2, screenSize[1]/2, 300, 300, time, Enum.ContentAlign.CenterXY)
+    Renderer.SetDrawColor(244, 245, 246, 255);
+    Renderer.DrawText(title, screenSize[0] / 2 - 150, screenSize[1] / 2 - 200, 'Category', time, Enum.ContentAlign.RightCenterY);
+    Renderer.DrawText(title, screenSize[0] / 2 - 100, screenSize[1] / 2 - 200, 'Script name', time, Enum.ContentAlign.LeftCenterY);
+    Renderer.DrawText(title, screenSize[0] / 2 - 100 + distance, screenSize[1] / 2 - 200, 'Version', time, Enum.ContentAlign.LeftCenterY);
+    for (let index = 0; index < versions.length; index++) {
+        Renderer.DrawText(font, screenSize[0] / 2 - 150, screenSize[1] / 2 - 166 + (24 * index), versions[index][0], time, Enum.ContentAlign.RightCenterY);
+        Renderer.DrawText(font, screenSize[0] / 2 - 100, screenSize[1] / 2 - 166 + (24 * index), versions[index][1], time, Enum.ContentAlign.LeftCenterY);
+        Renderer.DrawText(font, screenSize[0] / 2 - 100 + distance, screenSize[1] / 2 - 166 + (24 * index), versions[index][2], time, Enum.ContentAlign.LeftCenterY);
+    }
+}
 Menu.SetOrdering(['Custom Scripts', 'Information'], 2);
 Menu.SetOrdering(['Custom Scripts', 'Heroes'], 1);
+Menu.SetOrdering(['Custom Scripts', 'Other'], 0);
 Menu.SetOrdering(['Custom Scripts', 'Heroes', 'Strength'], 2);
 Menu.SetOrdering(['Custom Scripts', 'Heroes', 'Agility'], 1);
 Menu.SetOrdering(['Custom Scripts', 'Heroes', 'Intelligence'], 0);
+RegisterScript(zz_Core);
 
 
 /***/ }),
 
 /***/ 0:
-/*!***************************!*\
-  !*** multi ./src/Core.ts ***!
-  \***************************/
+/*!******************************!*\
+  !*** multi ./src/zz_Core.ts ***!
+  \******************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Minority\scripts\src\Core.ts */"./src/Core.ts");
+module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Minority\scripts\src\zz_Core.ts */"./src/zz_Core.ts");
 
 
 /***/ })
