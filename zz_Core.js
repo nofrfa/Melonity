@@ -97,7 +97,7 @@ let zz_Core = {};
 let versions = [
     ['ArcWarden', 'MagneticFieldTimer', 'release-1.0.1'],
     ['ArcWarden', 'TempestTimer', 'release-1.1.2'],
-    ['Information', 'GoldInfo', 'beta-1.1.4'],
+    ['Information', 'GoldInfo', 'beta-1.3.5'],
     ['Tinker', 'RockShiva', 'beta-1.1.0'],
     ['Tusk', 'AutoTrick', 'release-1.0.1']
 ];

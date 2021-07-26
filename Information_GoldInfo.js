@@ -106,7 +106,7 @@ var mainGoldInfo;
     mainGoldInfo.posY = Config.ReadFloat("GoldInfo", "posY", Renderer.GetScreenSize()[1] / 2);
     mainGoldInfo.myTeam = 0;
     mainGoldInfo.bountyCost = 36;
-    mainGoldInfo.enemyList = [[null, 0, 0, null], [null, 0, 0, null], [null, 0, 0, null], [null, 0, 0, null], [null, 0, 0, null]];
+    mainGoldInfo.enemyList = [[null, 0, 0, false, null], [null, 0, 0, false, null], [null, 0, 0, false, null], [null, 0, 0, false, null], [null, 0, 0, false, null]];
     mainGoldInfo.enemyListLength = 0;
     mainGoldInfo.mainFont = Renderer.LoadFont('Arial', 16, Enum.FontWeight.LIGHT, Enum.FontFlags.OUTLINE);
     mainGoldInfo.neutralCreepList = [
@@ -124,13 +124,13 @@ var mainGoldInfo;
         ['radiant_melee_mega', 22], ['radiant_ranged_mega', 22], ['creep_bad_melee_mega', 24], ['lane_dire_ranged_mega', 24]
     ];
     let menuCalcLabel = Menu.AddToggle(['Custom Scripts', 'Information', 'Gold Info'], 'Calculation Gold', true).SetNameLocale("ru", "Расчёт золота");
-    Menu.GetFolder(['Custom Scripts', 'Information', 'Gold Info']).SetTip("Кастомный скрипт\nСделано: no_frfa\nДанный скрипт будет выводить ВОЗМОЖНОЕ количество золота у вражеских героев\nНа данный момент скрипт учитывает:\n-Убитых крипов\n-Убийство рошана\n-Периодическое золото\n-Ломание вышек(Частично)\n-Подбирание БаунтиРун\n-Убийство героев(Частично)", "ru");
-    Menu.GetFolder(['Custom Scripts', 'Information', 'Gold Info']).SetTip('Custom Script\nMade by: no_frfa\nSOON', "en");
+    Menu.GetFolder(['Custom Scripts', 'Information', 'Gold Info']).SetTip("Сделано: no_frfa\nДанный скрипт будет выводить ВОЗМОЖНОЕ количество золота у вражеских героев\nНа данный момент скрипт учитывает:"
+        + "\n- Убитых крипов\n- Убийство рошана\n- Периодическое золото\n- Философский камень\n- Подбирание БаунтиРун\n- Использование мидаса\n- Убийство курьера\n- Убийство героев (Частично)\n- Ломание вышек (Частично)", "ru");
+    Menu.GetFolder(['Custom Scripts', 'Information', 'Gold Info']).SetTip('Made by: no_frfa\nSOON', "en");
     menuCalcLabel.SetTip('Если включено, скрипт будет рассчитывать вражеское золото (Если будет включено посередине игры, значение золота будет неверным)', 'ru');
     menuCalcLabel.SetTip('SOON', 'en');
     menuCalcLabel.OnChange(state => { mainGoldInfo.menuCalculate = state.newValue; });
     mainGoldInfo.menuCalculate = menuCalcLabel.GetValue();
-    Menu.SetImage(['Custom Scripts', 'Information'], '~/menu/40x40/info.png');
     let menuRenderLabel = Menu.AddToggle(['Custom Scripts', 'Information', 'Gold Info'], 'Render Panel', false).SetNameLocale("ru", "Отрисовка панели");
     menuRenderLabel.OnChange(state => { mainGoldInfo.menuRender = state.newValue; });
     mainGoldInfo.menuRender = menuRenderLabel.GetValue();
@@ -150,6 +150,7 @@ var mainGoldInfo;
     mainGoldInfo.menuHelpButton_stat = Menu.AddButton(['Custom Scripts', 'Information', 'Gold Info', 'Help'], 'Reset Stat', () => { fixStat(); });
     mainGoldInfo.menuHelpButton_stat.SetTip("Используйте, если хотите сбросить статистику у героев \nДанная кнопка может полностью сломать расчёт золота у врагов -> нажмите второй раз для подтверждения (После 15 секунд, кнопка ResetStat вернётся)", "ru");
     mainGoldInfo.menuHelpButton_stat.SetTip("SOON", "en");
+    Menu.SetImage(['Custom Scripts', 'Information'], '~/menu/40x40/info.png');
     let Load;
     (function (Load) {
         function Init() {
@@ -201,7 +202,7 @@ GoldInfoScript.OnDraw = () => {
                 if (mainGoldInfo.enemyList[index][0] == null)
                     continue;
                 Renderer.SetDrawColor(255, 255, 255, 255);
-                Renderer.DrawImage(mainGoldInfo.enemyList[index][3], mainGoldInfo.posX - 20, mainGoldInfo.posY + 17 + (34 * index), 24, 23, 0, Enum.ContentAlign.CenterXY);
+                Renderer.DrawImage(mainGoldInfo.enemyList[index][4], mainGoldInfo.posX - 20, mainGoldInfo.posY + 17 + (34 * index), 24, 23, 0, Enum.ContentAlign.CenterXY);
                 Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX - 5, mainGoldInfo.posY + 16 + (34 * index), `${mainGoldInfo.enemyList[index][1].toFixed()}`, 0, Enum.ContentAlign.LeftCenterY);
                 Renderer.SetDrawColor(255, 215, 0, mainGoldInfo.menuPanelSettings_aplha);
                 Renderer.DrawOutlineRect(mainGoldInfo.posX, mainGoldInfo.posY + 3 + (34 * index), 82, 28, 0, Enum.ContentAlign.CenterXBottom);
@@ -224,7 +225,7 @@ GoldInfoScript.OnUpdate = () => {
             for (let index = 0; index < enemyHeroes.length; index++) {
                 mainGoldInfo.enemyList[index][0] = enemyHeroes[index];
                 mainGoldInfo.enemyList[index][1] = 0;
-                mainGoldInfo.enemyList[index][3] = enemyHeroes[index].GetImage(true);
+                mainGoldInfo.enemyList[index][4] = enemyHeroes[index].GetImage(true);
             }
             if (GameRules.GetGameState() === Enum.GameState.GAME_IN_PROGRESS) {
                 let gameTime = Number((GameRules.GetGameTime() - GameRules.GetPreGameStartTime())) - 90;
@@ -267,12 +268,15 @@ GoldInfoScript.OnUpdate = () => {
                         let inventoryCost = 0;
                         for (let itemInInv of inventory) {
                             inventoryCost += itemInInv.GetCost();
+                            if (itemInInv.GetName() === 'item_philosophers_stone') {
+                                timeForGold += 0.75;
+                            }
                         }
                         heroOfList[1] = 700 + timeForGold + heroOfList[2] - inventoryCost - goldStage1 - goldStage2 - goldStage3 - goldStage4;
                     }
                     for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
                         if (mainGoldInfo.enemyList[index][0] != null)
-                            Config.WriteInt('GoldInfo', `index${index.toString()}`, mainGoldInfo.enemyList[index][2]);
+                            mainGoldInfo.enemyList[index][2];
                     }
                 }
             }
@@ -315,24 +319,26 @@ GoldInfoScript.OnFireEvent = (event) => {
             let killed = EntityList.GetByIndex(event.GetInt('entindex_killed'));
             if (killed == null)
                 return;
-            if (killed.GetModelName().split('/', 2)[1] === 'creeps' && attacker.GetEntityName().replace('npc_dota_hero_', 'ISHERO_').split('_')[0] === 'ISHERO' && !attacker.IsSameTeam(mainGoldInfo.myHero))
+            if (killed.IsCreep() && attacker.IsHero() && !attacker.IsSameTeam(mainGoldInfo.myHero) && !mainGoldInfo.enemyList[GetIndexHeroInArray(attacker.GetEntityName())][3])
                 addGoldHero(killed, attacker.GetEntityName());
+            if (!attacker.IsSameTeam(mainGoldInfo.myHero) && killed.IsCourier()) {
+                addGoldHero(null, attacker.GetEntityName(), 25 + (5 * killed.GetCurrentLevel()), true);
+            }
         }
         if (event.name === 'dota_tower_kill') {
             if (mainGoldInfo.myTeam != event.GetInt('teamnumber'))
                 addGoldHero(null, null, event.GetInt('gold'), true);
         }
         if (event.name === 'dota_player_kill') {
-            if (event.GetInt('neutral') == 1 || event.GetInt('greevil') == 1)
+            if (event.GetInt('neutral') || event.GetInt('greevil'))
                 return;
             EntityList.GetPlayersList().forEach((player) => {
                 if (player.GetPlayerID() == event.GetInt('killer1_userid')) {
                     for (let var0 of mainGoldInfo.enemyList) {
                         if (var0[0] == null)
                             continue;
-                        if (var0[0].GetEntityName() === player.GetAssignedHero().GetEntityName()) {
+                        if (var0[0].GetEntityName() === player.GetAssignedHero().GetEntityName())
                             addGoldHero(null, player.GetAssignedHero().GetEntityName(), mainGoldInfo.bountyCost);
-                        }
                     }
                 }
             });
@@ -341,15 +347,28 @@ GoldInfoScript.OnFireEvent = (event) => {
 };
 GoldInfoScript.OnParticleCreate = (event) => {
     if (mainGoldInfo.menuCalculate) {
-        if (event.entity == null || mainGoldInfo.enemyListLength == 0)
+        if (mainGoldInfo.enemyListLength == 0)
             return;
-        if (event.name === 'rune_bounty_owner' && event.entity.GetEntityName().replace('npc_dota_hero_', 'ISHERO_').split('_')[0] === 'ISHERO') {
-            for (let var0 of mainGoldInfo.enemyList) {
-                if (var0[0] == null)
-                    continue;
-                if (var0[0].GetEntityName() === event.entity.GetEntityName()) {
-                    addGoldHero(null, event.entity.GetEntityName(), mainGoldInfo.bountyCost);
+        if (event.name === 'rune_bounty_owner') {
+            if (event.entity.IsHero()) {
+                for (let var0 of mainGoldInfo.enemyList) {
+                    if (var0[0] == null)
+                        continue;
+                    if (var0[0].GetEntityName() === event.entity.GetEntityName()) {
+                        addGoldHero(null, event.entity.GetEntityName(), mainGoldInfo.bountyCost);
+                    }
                 }
+            }
+        }
+        if (event.name === 'hand_of_midas') {
+            if (event.entityForModifiers.IsHero()) {
+                if (GetIndexHeroInArray(event.entityForModifiers.GetEntityName()) >= 0) {
+                    mainGoldInfo.enemyList[GetIndexHeroInArray(event.entityForModifiers.GetEntityName())][3] = true;
+                    setTimeout(() => {
+                        mainGoldInfo.enemyList[GetIndexHeroInArray(event.entityForModifiers.GetEntityName())][3] = false;
+                    }, 66);
+                }
+                addGoldHero(null, event.entityForModifiers.GetEntityName(), 100);
             }
         }
     }
@@ -361,7 +380,7 @@ GoldInfoScript.OnGameEnd = () => {
             Config.WriteInt('GoldInfo', `index${index.toString()}`, 0);
     }
     mainGoldInfo.enemyListLength = 0;
-    mainGoldInfo.enemyList = [[null, 0, 0, null], [null, 0, 0, null], [null, 0, 0, null], [null, 0, 0, null], [null, 0, 0, null]];
+    mainGoldInfo.enemyList = [[null, 0, 0, false, null], [null, 0, 0, false, null], [null, 0, 0, false, null], [null, 0, 0, false, null], [null, 0, 0, false, null]];
     mainGoldInfo.myHero = null;
 };
 GoldInfoScript.OnScriptLoad = GoldInfoScript.OnGameStart = mainGoldInfo.Load.Init;
@@ -424,6 +443,15 @@ function addGoldHero(entity_killed, heroName, gold, all) {
             var0[2] += 135;
         }
     }
+}
+function GetIndexHeroInArray(name) {
+    for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
+        if (mainGoldInfo.enemyList[index][0] == null)
+            continue;
+        if (mainGoldInfo.enemyList[index][0].GetEntityName() === name)
+            return index;
+    }
+    return -1;
 }
 function fixButton() {
     mainGoldInfo.screenSize = Renderer.GetScreenSize();
