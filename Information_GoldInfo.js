@@ -368,7 +368,7 @@ GoldInfoScript.OnParticleCreate = (event) => {
                         mainGoldInfo.enemyList[GetIndexHeroInArray(event.entityForModifiers.GetEntityName())][3] = false;
                     }, 66);
                 }
-                addGoldHero(null, event.entityForModifiers.GetEntityName(), 100);
+                addGoldHero(null, event.entityForModifiers.GetEntityName(), 160);
             }
         }
     }
