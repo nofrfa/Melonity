@@ -115,7 +115,7 @@ var mainGoldInfo;
         [null, 0, 0, 0, false, false, null],
         [null, 0, 0, 0, false, false, null]
     ];
-    mainGoldInfo.enemyListBuyBackUsed = [[false], [false], [false], [false], [false]];
+    mainGoldInfo.enemyListBuyBackUsed = [[false, 0], [false, 0], [false, 0], [false, 0], [false, 0]];
     mainGoldInfo.enemyListLength = 0;
     mainGoldInfo.mainFont = Renderer.LoadFont('Arial', 16, Enum.FontWeight.LIGHT, Enum.FontFlags.OUTLINE);
     mainGoldInfo.neutralCreepList = [
@@ -145,7 +145,7 @@ var mainGoldInfo;
     mainGoldInfo.menuRender = menuRenderLabel.GetValue();
     let menuStatusBBLabel = Menu.AddToggle(['Custom Scripts', 'Information', 'Gold Info'], 'Displaying Status Bayback', true).SetNameLocale("ru", "Отображение состояния байбэка");
     menuStatusBBLabel.SetTip("Отображает рядом на панели рядом с героями ВОЗМОЖНОЕ состояние байбека (хватает ли врагу денег на байбек)", "ru");
-    menuStatusBBLabel.SetTip("Displays the POSSIBLE state of the buyback next to the heroes on the panel next to the heroes (does the enemy have enough money for the buyback)", "ru");
+    menuStatusBBLabel.SetTip("Displays the POSSIBLE state of the buyback next to the heroes on the panel next to the heroes (does the enemy have enough money for the buyback)", "en");
     menuStatusBBLabel.OnChange(state => { mainGoldInfo.menuStatusBB = state.newValue; });
     mainGoldInfo.menuStatusBB = menuStatusBBLabel.GetValue();
     let menuCanPanelMoveLabel = Menu.AddToggle(['Custom Scripts', 'Information', 'Gold Info'], 'Moving the panel', false).SetNameLocale("ru", "Перемещение панели");
@@ -165,13 +165,42 @@ var mainGoldInfo;
     mainGoldInfo.menuHelpButton_stat.SetTip("Используйте, если хотите сбросить статистику у героев \nДанная кнопка может полностью сломать расчёт золота у врагов -> нажмите второй раз для подтверждения (После 15 секунд, кнопка ResetStat вернётся)", "ru");
     mainGoldInfo.menuHelpButton_stat.SetTip("SOON", "en");
     Menu.SetImage(['Custom Scripts', 'Information'], '~/menu/40x40/info.png');
+    mainGoldInfo.CFG = {
+        Save: (key, value) => {
+            Config.Write("GoldInfo", key, value);
+        },
+        Read: (key, defaultValue) => {
+            return Config.Read('GoldInfo', key, defaultValue);
+        }
+    };
     let Load;
     (function (Load) {
         function Init() {
             if (GameRules.IsActiveGame()) {
-                for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
-                    mainGoldInfo.enemyList[index][2] = Config.ReadInt('GoldInfo', `index${index.toString()}`, 0);
+                if (GameRules.GetMatchID().toString() != mainGoldInfo.CFG.Read('GameID', '-1')) {
+                    mainGoldInfo.gameStart = false;
+                    mainGoldInfo.enemyListLength = 0;
+                    mainGoldInfo.myHero = null;
+                    mainGoldInfo.enemyList = [
+                        [null, 0, 0, 0, false, false, null],
+                        [null, 0, 0, 0, false, false, null],
+                        [null, 0, 0, 0, false, false, null],
+                        [null, 0, 0, 0, false, false, null],
+                        [null, 0, 0, 0, false, false, null]
+                    ];
+                    mainGoldInfo.enemyListBuyBackUsed = [[false, 0], [false, 0], [false, 0], [false, 0], [false, 0]];
+                    mainGoldInfo.enemyListLength = 0;
+                    mainGoldInfo.CFG.Save('GameID', GameRules.GetMatchID().toString());
+                    mainGoldInfo.CFG.Save('UsersData', JSON.stringify(mainGoldInfo.enemyList));
+                    mainGoldInfo.CFG.Save('UserDataPart2', JSON.stringify(mainGoldInfo.enemyListBuyBackUsed));
                 }
+                let parsed = JSON.parse(mainGoldInfo.CFG.Read('UsersData', ''));
+                if (parsed != '') {
+                    mainGoldInfo.enemyList = ConvertIndexToHero(parsed);
+                }
+                parsed = JSON.parse(mainGoldInfo.CFG.Read('UserDataPart2', ''));
+                if (parsed != '')
+                    mainGoldInfo.enemyListBuyBackUsed = parsed;
                 mainGoldInfo.gameStart = true;
                 mainGoldInfo.myHero = EntitySystem.GetLocalHero();
                 mainGoldInfo.myTeam = mainGoldInfo.myHero.GetTeamNum();
@@ -186,63 +215,9 @@ var mainGoldInfo;
         Load.Init = Init;
     })(Load = mainGoldInfo.Load || (mainGoldInfo.Load = {}));
 })(mainGoldInfo || (mainGoldInfo = {}));
-GoldInfoScript.OnDraw = () => {
-    if (mainGoldInfo.gameStart && mainGoldInfo.menuRender) {
-        let heroesSize = 0;
-        if (mainGoldInfo.menuCalculate) {
-            for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
-                if (mainGoldInfo.enemyList[index][0] != null)
-                    heroesSize++;
-            }
-        }
-        Renderer.SetDrawColor(43, 43, 58, mainGoldInfo.menuPanelSettings_aplha);
-        Renderer.DrawFilledRect(mainGoldInfo.posX, mainGoldInfo.posY, 88, 34 * heroesSize, 0, Enum.ContentAlign.CenterXBottom);
-        Renderer.SetDrawColor(37, 69, 88, mainGoldInfo.menuPanelSettings_aplha);
-        Renderer.DrawFilledRect(mainGoldInfo.posX, mainGoldInfo.posY, 88, 18, 0, Enum.ContentAlign.CenterXTop);
-        Renderer.SetDrawColor(244, 245, 246, mainGoldInfo.menuPanelSettings_aplha);
-        Renderer.DrawOutlineRect(mainGoldInfo.posX, mainGoldInfo.posY, 90, 34 * heroesSize, 0, Enum.ContentAlign.CenterXBottom);
-        Renderer.DrawOutlineRect(mainGoldInfo.posX, mainGoldInfo.posY + 1, 90, 20, 0, Enum.ContentAlign.CenterXTop);
-        Renderer.SetDrawColor(255, 255, 255, mainGoldInfo.menuPanelSettings_aplha);
-        Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX, mainGoldInfo.posY - 1, `Gold Panel`, 0, Enum.ContentAlign.CenterXTop);
-        if (!mainGoldInfo.menuCalculate) {
-            let text = 'Gold calculation is disabled';
-            if (Menu.GetLocale() === 'ru')
-                text = 'Расчёт золота выключен';
-            Renderer.SetDrawColor(255, 20, 20, mainGoldInfo.menuPanelSettings_aplha);
-            Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX, mainGoldInfo.posY, text, 0, Enum.ContentAlign.CenterXBottom);
-        }
-        else {
-            for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
-                if (mainGoldInfo.enemyList[index][0] == null)
-                    continue;
-                Renderer.SetDrawColor(255, 255, 255, 255);
-                Renderer.DrawImage(mainGoldInfo.enemyList[index][6], mainGoldInfo.posX - 20, mainGoldInfo.posY + 17 + (34 * index), 24, 23, 0, Enum.ContentAlign.CenterXY);
-                Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX - 5, mainGoldInfo.posY + 16 + (34 * index), `${mainGoldInfo.enemyList[index][1].toFixed()}`, 0, Enum.ContentAlign.LeftCenterY);
-                Renderer.SetDrawColor(255, 215, 0, mainGoldInfo.menuPanelSettings_aplha);
-                Renderer.DrawOutlineRect(mainGoldInfo.posX, mainGoldInfo.posY + 3 + (34 * index), 82, 28, 0, Enum.ContentAlign.CenterXBottom);
-                if (mainGoldInfo.menuStatusBB) {
-                    let canBuyBackText = 'No';
-                    if (Menu.GetLocale() === 'ru')
-                        canBuyBackText = 'Нет';
-                    if (mainGoldInfo.enemyList[index][4]) {
-                        canBuyBackText = 'Yes';
-                        if (Menu.GetLocale() === 'ru')
-                            canBuyBackText = 'Да';
-                    }
-                    let text = `${mainGoldInfo.enemyList[index][3]} (${canBuyBackText})`;
-                    Renderer.SetDrawColor(43, 43, 58, mainGoldInfo.menuPanelSettings_aplha);
-                    Renderer.DrawFilledRect(mainGoldInfo.posX + 44, mainGoldInfo.posY + 17 + (34 * index), Renderer.GetTextSize(mainGoldInfo.mainFont, text)[0] + 10, 28, 0, Enum.ContentAlign.LeftCenterY);
-                    Renderer.SetDrawColor(244, 245, 246, mainGoldInfo.menuPanelSettings_aplha);
-                    Renderer.DrawOutlineRect(mainGoldInfo.posX + 44, mainGoldInfo.posY + 17 + (34 * index), Renderer.GetTextSize(mainGoldInfo.mainFont, text)[0] + 10, 28, 0, Enum.ContentAlign.LeftCenterY);
-                    Renderer.SetDrawColor(255, 255, 255, 255);
-                    Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX + 48, mainGoldInfo.posY + 16 + (34 * index), text, 0, Enum.ContentAlign.LeftCenterY);
-                }
-            }
-        }
-    }
-};
 GoldInfoScript.OnUpdate = () => {
     if (mainGoldInfo.gameStart) {
+        let heroesSize = 0;
         if (mainGoldInfo.menuCalculate) {
             let heroes = EntitySystem.GetHeroesList();
             let enemyHeroes = [];
@@ -251,22 +226,19 @@ GoldInfoScript.OnUpdate = () => {
                     enemyHeroes.push(hero);
                 }
             }
-            if (enemyHeroes == null)
-                return;
-            for (let index = 0; index < enemyHeroes.length; index++) {
-                mainGoldInfo.enemyList[index][0] = enemyHeroes[index];
-                mainGoldInfo.enemyList[index][1] = 0;
-                mainGoldInfo.enemyList[index][4] = false;
-                mainGoldInfo.enemyList[index][6] = enemyHeroes[index].GetImage(true);
+            if (enemyHeroes.length) {
+                for (let index = 0; index < enemyHeroes.length; index++) {
+                    mainGoldInfo.enemyList[index][0] = enemyHeroes[index];
+                    mainGoldInfo.enemyList[index][1] = 0;
+                    mainGoldInfo.enemyList[index][4] = false;
+                    mainGoldInfo.enemyList[index][6] = enemyHeroes[index].GetImage(true);
+                }
             }
             if (GameRules.GetGameState() === Enum.GameState.GAME_IN_PROGRESS) {
                 let gameTime = Number((GameRules.GetGameTime() - GameRules.GetPreGameStartTime())) - 90;
                 let timeForGold = 0;
-                let goldStage1 = 0;
-                let goldStage2 = 0;
-                let goldStage3 = 0;
-                let goldStage4 = 0;
-                mainGoldInfo.bountyCost = (36 + (9 * Number((gameTime / 300).toFixed())));
+                let [goldStage1, goldStage2, goldStage3, goldStage4] = [0, 0, 0, 0];
+                mainGoldInfo.bountyCost = (36 + (9 * Number((gameTime / 300).toString().split('.', 1)[0])));
                 if (Number((gameTime / 60).toFixed()) < 5) {
                     timeForGold = gameTime / 0.6;
                 }
@@ -286,15 +258,13 @@ GoldInfoScript.OnUpdate = () => {
                     goldStage4 = gameTime * 2 * timeForGold - goldStage1 - goldStage2 - goldStage3;
                     timeForGold = gameTime * 2.13;
                 }
-                let heroesSize = 0;
                 for (let check of mainGoldInfo.enemyList) {
-                    if (check[0] != null)
+                    if (check[0])
                         heroesSize++;
                 }
-                mainGoldInfo.enemyListLength = heroesSize;
                 if (heroesSize > 0) {
                     for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
-                        if (mainGoldInfo.enemyList[index][0] == null)
+                        if (!mainGoldInfo.enemyList[index][0] || mainGoldInfo.enemyList[index][0] == undefined)
                             continue;
                         let inventory = mainGoldInfo.enemyList[index][0].GetItems(false);
                         let inventoryCost = 0;
@@ -305,29 +275,44 @@ GoldInfoScript.OnUpdate = () => {
                             }
                         }
                         let TotalGold = 700 + timeForGold + mainGoldInfo.enemyList[index][2] - inventoryCost - goldStage1 - goldStage2 - goldStage3 - goldStage4;
-                        mainGoldInfo.enemyList[index][1] = TotalGold;
+                        mainGoldInfo.enemyList[index][1] = Number(TotalGold.toFixed());
                         let BuyBackCost = 200 + (700 + timeForGold + mainGoldInfo.enemyList[index][2] + inventoryCost - goldStage1 - goldStage2 - goldStage3 - goldStage4) / 12;
                         mainGoldInfo.enemyList[index][3] = Number(BuyBackCost.toFixed());
-                        if (mainGoldInfo.enemyListBuyBackUsed[index]) {
-                            mainGoldInfo.enemyList[index][4] = TotalGold >= BuyBackCost;
+                        mainGoldInfo.enemyList[index][4] = !mainGoldInfo.enemyListBuyBackUsed[index][0] ? TotalGold >= BuyBackCost : false;
+                        if (mainGoldInfo.enemyListBuyBackUsed[index][0]) {
+                            if (mainGoldInfo.enemyListBuyBackUsed[index][1] - GameRules.GetGameTime() <= 0)
+                                mainGoldInfo.enemyListBuyBackUsed[index][0] = false;
                         }
-                        else
-                            mainGoldInfo.enemyList[index][4] = false;
                     }
+                    mainGoldInfo.CFG.Save('UsersData', JSON.stringify(ConvertHeroToIndex()));
+                    mainGoldInfo.CFG.Save('UserDataPart2', JSON.stringify(mainGoldInfo.enemyListBuyBackUsed));
                 }
             }
             else {
-                for (let heroOfList of mainGoldInfo.enemyList) {
-                    if (heroOfList[0] == null)
+                for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
+                    if (!mainGoldInfo.enemyList[index][0])
                         continue;
-                    let inventory = heroOfList[0].GetItems(false);
+                    heroesSize++;
+                    let inventory = mainGoldInfo.enemyList[index][0].GetItems(false);
                     let inventoryCost = 0;
                     for (let itemInInv of inventory) {
                         inventoryCost += itemInInv.GetCost();
                     }
-                    heroOfList[1] = 700 + heroOfList[2] - inventoryCost;
+                    mainGoldInfo.enemyList[index][1] = 700 + mainGoldInfo.enemyList[index][2] - inventoryCost;
+                    let TotalGold = 700 + mainGoldInfo.enemyList[index][2] - inventoryCost;
+                    mainGoldInfo.enemyList[index][1] = Number(TotalGold.toFixed());
+                    let BuyBackCost = 200 + (700 + mainGoldInfo.enemyList[index][2] + inventoryCost) / 12;
+                    mainGoldInfo.enemyList[index][3] = Number(BuyBackCost.toFixed());
+                    mainGoldInfo.enemyList[index][4] = !mainGoldInfo.enemyListBuyBackUsed[index][0] ? TotalGold >= BuyBackCost : false;
+                    if (mainGoldInfo.enemyListBuyBackUsed[index][0]) {
+                        if (mainGoldInfo.enemyListBuyBackUsed[index][1] - GameRules.GetGameTime() <= 0)
+                            mainGoldInfo.enemyListBuyBackUsed[index][0] = false;
+                    }
+                    mainGoldInfo.CFG.Save('UsersData', JSON.stringify(ConvertHeroToIndex()));
+                    mainGoldInfo.CFG.Save('UserDataPart2', JSON.stringify(mainGoldInfo.enemyListBuyBackUsed));
                 }
             }
+            mainGoldInfo.enemyListLength = heroesSize;
         }
         else
             mainGoldInfo.enemyListLength = 0;
@@ -346,6 +331,52 @@ GoldInfoScript.OnUpdate = () => {
                 Config.WriteFloat("GoldInfo", "posY", mainGoldInfo.posY);
             }
         }
+        if (mainGoldInfo.menuRender) {
+            Renderer.SetDrawColor(43, 43, 58, mainGoldInfo.menuPanelSettings_aplha);
+            Renderer.DrawFilledRect(mainGoldInfo.posX, mainGoldInfo.posY, 88, 34 * heroesSize, 0, Enum.ContentAlign.CenterXBottom);
+            Renderer.SetDrawColor(37, 69, 88, mainGoldInfo.menuPanelSettings_aplha);
+            Renderer.DrawFilledRect(mainGoldInfo.posX, mainGoldInfo.posY, 88, 18, 0, Enum.ContentAlign.CenterXTop);
+            Renderer.SetDrawColor(244, 245, 246, mainGoldInfo.menuPanelSettings_aplha);
+            Renderer.DrawOutlineRect(mainGoldInfo.posX, mainGoldInfo.posY, 90, 34 * heroesSize, 0, Enum.ContentAlign.CenterXBottom);
+            Renderer.DrawOutlineRect(mainGoldInfo.posX, mainGoldInfo.posY + 1, 90, 20, 0, Enum.ContentAlign.CenterXTop);
+            Renderer.SetDrawColor(255, 255, 255, mainGoldInfo.menuPanelSettings_aplha);
+            Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX, mainGoldInfo.posY - 1, `Gold Panel`, 0, Enum.ContentAlign.CenterXTop);
+            let Locale = Menu.GetLocale();
+            if (!mainGoldInfo.menuCalculate) {
+                let text = Locale === 'ru' ? 'Расчёт золота выключен' : 'Gold calculation is disabled';
+                Renderer.SetDrawColor(255, 20, 20, mainGoldInfo.menuPanelSettings_aplha);
+                Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX, mainGoldInfo.posY, text, 0, Enum.ContentAlign.CenterXBottom);
+            }
+            else {
+                for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
+                    if (!mainGoldInfo.enemyList[index][0])
+                        continue;
+                    Renderer.SetDrawColor(255, 255, 255, 255);
+                    Renderer.DrawImage(mainGoldInfo.enemyList[index][6], mainGoldInfo.posX - 20, mainGoldInfo.posY + 17 + (34 * index), 24, 23, 0, Enum.ContentAlign.CenterXY);
+                    Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX - 5, mainGoldInfo.posY + 16 + (34 * index), `${mainGoldInfo.enemyList[index][1]}`, 0, Enum.ContentAlign.LeftCenterY);
+                    Renderer.SetDrawColor(255, 215, 0, mainGoldInfo.menuPanelSettings_aplha);
+                    Renderer.DrawOutlineRect(mainGoldInfo.posX, mainGoldInfo.posY + 3 + (34 * index), 82, 28, 0, Enum.ContentAlign.CenterXBottom);
+                    if (mainGoldInfo.menuStatusBB) {
+                        let StatusBuyBack = Locale === 'ru' ? 'Нет' : 'No';
+                        if (mainGoldInfo.enemyListBuyBackUsed[index][0]) {
+                            StatusBuyBack += ` (${(mainGoldInfo.enemyListBuyBackUsed[index][1] - GameRules.GetGameTime()).toFixed()})` + Locale === 'ru' ? 'сек' : 'sec';
+                        }
+                        else {
+                            if (mainGoldInfo.enemyList[index][4]) {
+                                StatusBuyBack = Locale === 'ru' ? 'Да' : 'Yes';
+                            }
+                        }
+                        let text = `${mainGoldInfo.enemyList[index][3]} (${StatusBuyBack})`;
+                        Renderer.SetDrawColor(43, 43, 58, mainGoldInfo.menuPanelSettings_aplha);
+                        Renderer.DrawFilledRect(mainGoldInfo.posX + 44, mainGoldInfo.posY + 17 + (34 * index), Renderer.GetTextSize(mainGoldInfo.mainFont, text)[0] + 10, 28, 0, Enum.ContentAlign.LeftCenterY);
+                        Renderer.SetDrawColor(244, 245, 246, mainGoldInfo.menuPanelSettings_aplha);
+                        Renderer.DrawOutlineRect(mainGoldInfo.posX + 44, mainGoldInfo.posY + 17 + (34 * index), Renderer.GetTextSize(mainGoldInfo.mainFont, text)[0] + 10, 28, 0, Enum.ContentAlign.LeftCenterY);
+                        Renderer.SetDrawColor(255, 255, 255, 255);
+                        Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX + 48, mainGoldInfo.posY + 16 + (34 * index), text, 0, Enum.ContentAlign.LeftCenterY);
+                    }
+                }
+            }
+        }
     }
 };
 GoldInfoScript.OnFireEvent = (event) => {
@@ -353,7 +384,7 @@ GoldInfoScript.OnFireEvent = (event) => {
         if (event.name === 'entity_killed') {
             let attacker = EntityList.GetByIndex(event.GetInt('entindex_attacker'));
             let killed = EntityList.GetByIndex(event.GetInt('entindex_killed'));
-            if (killed == null || attacker.IsSameTeam(mainGoldInfo.myHero))
+            if (!killed || !attacker.IsHero() || attacker.IsSameTeam(mainGoldInfo.myHero))
                 return;
             if (killed.IsCreep() && attacker.IsHero() && !mainGoldInfo.enemyList[GetIndexHeroInArray(attacker.GetEntityName())][5])
                 addGoldHero(killed, attacker.GetEntityName());
@@ -375,7 +406,6 @@ GoldInfoScript.OnFireEvent = (event) => {
                 addGoldHero(null, attacker.GetEntityName(), goldFromTower);
             }
             if (killed.IsStructure()) {
-                //fillers melee range
                 let Structure = killed.GetUnitName().replace('npc_dota_badguys_', '').replace('npc_dota_goodguys_', '').split('_');
                 let goldFromStructure = 0;
                 let goldDestroyer = 0;
@@ -409,7 +439,7 @@ GoldInfoScript.OnFireEvent = (event) => {
             EntityList.GetPlayersList().forEach((player) => {
                 if (player.GetPlayerID() == event.GetInt('killer1_userid')) {
                     for (let var0 of mainGoldInfo.enemyList) {
-                        if (var0[0] == null)
+                        if (!var0[0])
                             continue;
                         if (var0[0] == player.GetAssignedHero())
                             addGoldHero(null, player.GetAssignedHero().GetEntityName(), mainGoldInfo.bountyCost);
@@ -421,14 +451,12 @@ GoldInfoScript.OnFireEvent = (event) => {
 };
 GoldInfoScript.OnParticleCreate = (event) => {
     if (mainGoldInfo.menuCalculate) {
-        if (mainGoldInfo.enemyListLength == 0)
-            return;
         if (event.name === 'rune_bounty_owner') {
-            if (event.entity == null)
+            if (!event.entity)
                 return;
             if (event.entity.IsHero()) {
                 for (let var0 of mainGoldInfo.enemyList) {
-                    if (var0[0] == null)
+                    if (!var0[0])
                         continue;
                     if (var0[0].GetEntityName() === event.entity.GetEntityName())
                         addGoldHero(null, event.entity.GetEntityName(), mainGoldInfo.bountyCost);
@@ -453,10 +481,11 @@ GoldInfoScript.OnChatEvent = (event) => {
         EntityList.GetPlayersList().forEach((player) => {
             if (player.GetPlayerID() == event.playerIDs[0]) {
                 for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
-                    if (mainGoldInfo.enemyList[index][0] == null)
+                    if (!mainGoldInfo.enemyList[index][0])
                         continue;
                     if (mainGoldInfo.enemyList[index][0] == player.GetAssignedHero()) {
                         mainGoldInfo.enemyListBuyBackUsed[index][0] = true;
+                        mainGoldInfo.enemyListBuyBackUsed[index][1] = GameRules.GetGameTime() + 480;
                         mainGoldInfo.enemyList[index][2] -= mainGoldInfo.enemyList[index][3];
                     }
                 }
@@ -466,29 +495,49 @@ GoldInfoScript.OnChatEvent = (event) => {
 };
 GoldInfoScript.OnGameEnd = () => {
     mainGoldInfo.gameStart = false;
-    for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
-        if (mainGoldInfo.enemyList[index][0] != null)
-            Config.WriteInt('GoldInfo', `index${index.toString()}`, 0);
-    }
     mainGoldInfo.enemyListLength = 0;
-    mainGoldInfo.enemyList = [
+    mainGoldInfo.myHero = null;
+};
+GoldInfoScript.OnScriptLoad = GoldInfoScript.OnGameStart = mainGoldInfo.Load.Init;
+function ConvertHeroToIndex() {
+    let tmpArray0 = mainGoldInfo.enemyList;
+    let tmpArray1 = [
+        [-1, 0, 0, 0, false, false, null],
+        [-1, 0, 0, 0, false, false, null],
+        [-1, 0, 0, 0, false, false, null],
+        [-1, 0, 0, 0, false, false, null],
+        [-1, 0, 0, 0, false, false, null]
+    ];
+    for (let index = 0; index < tmpArray0.length; index++) {
+        for (let index1 = 0; index1 < tmpArray0[index].length; index1++) {
+            tmpArray1[index][index1] = index1 == 0 ? tmpArray0[index][index1] ? tmpArray0[index][index1].GetIndex() : -1 : tmpArray0[index][index1];
+        }
+    }
+    return tmpArray1;
+}
+function ConvertIndexToHero(parsed) {
+    let tmpArray0 = parsed;
+    let tmpArray1 = [
         [null, 0, 0, 0, false, false, null],
         [null, 0, 0, 0, false, false, null],
         [null, 0, 0, 0, false, false, null],
         [null, 0, 0, 0, false, false, null],
         [null, 0, 0, 0, false, false, null]
     ];
-    mainGoldInfo.enemyListBuyBackUsed = [[false], [false], [false], [false], [false]];
-    mainGoldInfo.myHero = null;
-};
-GoldInfoScript.OnScriptLoad = GoldInfoScript.OnGameStart = mainGoldInfo.Load.Init;
+    for (let index = 0; index < tmpArray0.length; index++) {
+        for (let index1 = 0; index1 < tmpArray0[index].length; index1++) {
+            tmpArray1[index][index1] = index1 == 0 ? tmpArray0[index][index1] ? EntityList.GetByIndex(tmpArray0[index][index1]) : null : tmpArray0[index][index1];
+        }
+    }
+    return tmpArray1;
+}
 function addGoldHero(entity_killed, heroName, gold, all) {
     if (mainGoldInfo.enemyListLength == 0)
         return;
     let indexHero = -1;
     if (!all) {
         for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
-            if (mainGoldInfo.enemyList[index][0] == null)
+            if (!mainGoldInfo.enemyList[index][0])
                 continue;
             if (mainGoldInfo.enemyList[index][0].GetEntityName() === heroName) {
                 indexHero = index;
@@ -500,7 +549,7 @@ function addGoldHero(entity_killed, heroName, gold, all) {
             return;
         }
     }
-    if (entity_killed != null) {
+    if (entity_killed) {
         if (entity_killed.IsSameTeam(mainGoldInfo.enemyList[indexHero][0]))
             return;
         let entName = entity_killed.GetModelName();
@@ -544,7 +593,7 @@ function addGoldHero(entity_killed, heroName, gold, all) {
 }
 function GetIndexHeroInArray(name) {
     for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
-        if (mainGoldInfo.enemyList[index][0] == null)
+        if (!mainGoldInfo.enemyList[index][0])
             continue;
         if (mainGoldInfo.enemyList[index][0].GetEntityName() === name)
             return index;
@@ -579,12 +628,23 @@ function fixStat() {
         mainGoldInfo.menuHelpButton_stat = Menu.AddButton(['Custom Scripts', 'Information', 'Gold Info', 'Help'], 'Reset Stat', () => { fixStat(); });
         mainGoldInfo.menuHelpButton_stat.SetTip("Используйте, если хотите сбросить статистику у героев \nТак как данная кнопка может полностью сломать расчёт золота у врагов - нажмите второй раз для подтверждения (После 15 секунд, кнопка ResetStat вернётся)", "ru");
         mainGoldInfo.menuHelpButton_stat.SetTip("SOON", "en");
-        for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
-            Config.WriteInt('GoldInfo', `index${index.toString()}`, 0);
-        }
-        for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
-            mainGoldInfo.enemyList[index][2] = 0;
-        }
+        mainGoldInfo.enemyList = [
+            [null, 0, 0, 0, false, false, null],
+            [null, 0, 0, 0, false, false, null],
+            [null, 0, 0, 0, false, false, null],
+            [null, 0, 0, 0, false, false, null],
+            [null, 0, 0, 0, false, false, null]
+        ];
+        mainGoldInfo.enemyListBuyBackUsed = [[false, 0], [false, 0], [false, 0], [false, 0], [false, 0]];
+        let tmpArray1 = [
+            [-1, 0, 0, 0, false, false, null],
+            [-1, 0, 0, 0, false, false, null],
+            [-1, 0, 0, 0, false, false, null],
+            [-1, 0, 0, 0, false, false, null],
+            [-1, 0, 0, 0, false, false, null]
+        ];
+        mainGoldInfo.CFG.Save('UsersData', JSON.stringify(tmpArray1));
+        mainGoldInfo.CFG.Save('UserDataPart2', JSON.stringify(mainGoldInfo.enemyListBuyBackUsed));
     }
 }
 function RandomInt(min, max) {
