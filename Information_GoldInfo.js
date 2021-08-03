@@ -91,8 +91,11 @@
   !*** ./src/Information_GoldInfo.ts ***!
   \*************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
 let GoldInfoScript = {};
 var mainGoldInfo;
 (function (mainGoldInfo) {
@@ -106,8 +109,8 @@ var mainGoldInfo;
     mainGoldInfo.posX = Config.ReadFloat("GoldInfo", "posX", Renderer.GetScreenSize()[0] / 2);
     mainGoldInfo.posY = Config.ReadFloat("GoldInfo", "posY", Renderer.GetScreenSize()[1] / 2);
     mainGoldInfo.myTeam = 0;
-    mainGoldInfo.bountyCost = 36;
-    /**[Hero[0], GoldForRender[1], GoldForOther[2], BuyBackCost[3], CanBuyBack[4], MidasUsed[5], Icon[6]]*/
+    mainGoldInfo.multiplierGold = 1;
+    /*[Hero[0], GoldForRender[1], GoldForOther[2], BuyBackCost[3], CanBuyBack[4], MidasUsed[5], Icon[6]]*/
     mainGoldInfo.enemyList = [
         [null, 0, 0, 0, false, false, null],
         [null, 0, 0, 0, false, false, null],
@@ -118,52 +121,122 @@ var mainGoldInfo;
     mainGoldInfo.enemyListBuyBackUsed = [[false, 0], [false, 0], [false, 0], [false, 0], [false, 0]];
     mainGoldInfo.enemyListLength = 0;
     mainGoldInfo.mainFont = Renderer.LoadFont('Arial', 16, Enum.FontWeight.LIGHT, Enum.FontFlags.OUTLINE);
-    mainGoldInfo.neutralCreepList = [
-        //small
-        ['forest_troll_berserker', 22], ['troll_high_priest', 21], ['kobold_c', 6], ['kobold_a', 22], ['kobold_b', 14], ['gnoll', 22], ['ghost_a', 31], ['ghost_b', 18], ['harpy_b', 28], ['harpy_a', 22],
-        //medium
-        ['worg_large', 33], ['worg_small', 19], ['ogre_lrg', 32], ['ogre_med', 28], ['golem_b', 19],
-        //big
-        ['troll_dark_a', 23], ['troll_dark_b', 46], ['skeleton_melee', 9], ['satyr_a', 66], ['satyr_c', 24], ['satyr_b', 13], ['centaur_med', 17], ['centaur_lrg', 58], ['furbolg_disrupter', 66], ['beast', 40], ['vulture_b', 14], ['vulture_a', 62],
-        //ancient
-        ['golem_a', 62], ['thunder_lizard_big', 67], ['thunder_lizard_small', 47], ['black_dragon', 122], ['black_drake', 32]
-    ];
-    mainGoldInfo.laneCreepList = [
-        ['creep_bad_melee', 38], ['radiant_melee', 38], ['lane_dire_ranged', 53], ['radiant_ranged', 53],
-        ['radiant_melee_mega', 22], ['radiant_ranged_mega', 22], ['creep_bad_melee_mega', 24], ['lane_dire_ranged_mega', 24]
-    ];
+    mainGoldInfo.laneCreepList = {
+        "bonus_gold": 0,
+        "melee": 38,
+        "ranged": 53,
+        "melee_upgraded": 22,
+        "ranged_upgraded": 24,
+        "melee_upgraded_mega": 22,
+        "ranged_upgraded_mega": 24,
+        "siege": 73,
+        "siege_upgraded_mega": 73,
+    };
+    mainGoldInfo.otherCreepList = {
+        "ghost": 31,
+        "fel_beast": 18,
+        "harpy_storm": 28,
+        "harpy_scout": 22,
+        "kobold_taskmaster": 22,
+        "kobold_tunneler": 14,
+        "kobold": 6,
+        "forest_troll_high_priest": 21,
+        "forest_troll_berserker": 22,
+        "gnoll_assassin": 22,
+        "mud_golem": 25,
+        "mud_golem_split": 10,
+        "alpha_wolf": 33,
+        "giant_wolf": 19,
+        "satyr_soulstealer": 24,
+        "satyr_trickster": 13,
+        "satyr_hellcaller": 67,
+        "ogre_magi": 32,
+        "ogre_mauler": 28,
+        "dark_troll": 23,
+        "dark_troll_warlord": 46,
+        "warlord_skeleton_warrior": 9,
+        "centaur_outrunner": 17,
+        "centaur_khan": 58,
+        "enraged_wildkin": 62,
+        "wildkin": 14,
+        "polar_furbolg_ursa_warrior": 66,
+        "polar_furbolg_champion": 40,
+        "big_thunder_lizard": 67,
+        "small_thunder_lizard": 47,
+        "rock_golem": 42,
+        "granite_golem": 83,
+        "black_dragon": 122,
+        "black_drake": 32,
+        "visage_familiar1": 100, "visage_familiar2": 100, "visage_familiar3": 100,
+        "warlock_golem_1": 100, "warlock_golem_2": 150, "warlock_golem_3": 200,
+        "furion_treant_small": 8, "furion_treant_large": 21,
+        "eidolon": 23,
+        "beastmaster_boar": 32, "beastmaster_hawk_1": 30, "beastmaster_hawk_2": 40, "beastmaster_hawk_3": 50, "beastmaster_hawk_4": 60,
+        "lycan_wolf1": 21, "lycan_wolf2": 26, "lycan_wolf3": 36, "lycan_wolf4": 41,
+        "broodmother_spiderling": 9, "broodmother_spiderite": 3,
+        "lone_druid_bear": 300,
+        "invoker_forged_spirit": 39,
+        "necronomicon_warrior_3": 150, "necronomicon_archer_3": 150,
+        "wraith_king_skeleton_warrior": 5,
+        "observer_wards": 100,
+        "techies_land_mine": 25, "techies_stasis_trap": 10, "techies_remote_mine": 10,
+        "zeus_cloud": 100,
+        "ignis_fatuus": 100,
+        "unit_tombstone1": 125, "unit_tombstone2": 150, "unit_tombstone3": 175, "unit_tombstone4": 200,
+        "venomancer_plague_ward_1": 15, "venomancer_plague_ward_2": 17, "venomancer_plague_ward_3": 19, "venomancer_plague_ward_4": 21,
+        "rattletrap_cog": 18,
+        "phoenix_sun": 20,
+        "clinkz_skeleton_archer": 20,
+        "lich_ice_spire": 20,
+        "pugna_nether_ward_1": 20, "pugna_nether_ward_2": 40, "pugna_nether_ward_3": 60, "pugna_nether_ward_4": 80,
+        "templar_assassin_psionic_trap": 25,
+        "shadow_shaman_ward": 32,
+        "weaver_swarm": 31,
+        "juggernaut_healing_ward": 75,
+        "gyrocopter_homing_missile": 50,
+        "roshan": 245
+    };
     let menuCalcLabel = Menu.AddToggle(['Custom Scripts', 'Information', 'Gold Info'], 'Calculation Gold', true).SetNameLocale("ru", "Расчёт золота");
     Menu.GetFolder(['Custom Scripts', 'Information', 'Gold Info']).SetTip("Сделано: no_frfa\nДанный скрипт будет выводить ВОЗМОЖНОЕ количество золота у вражеских героев\nНа данный момент скрипт учитывает:"
         + "\n- Убитых крипов\n- Убийство рошана\n- Периодическое золото\n- Философский камень\n- Подбирание БаунтиРун\n- Использование мидаса\n- Убийство курьера\n- Убийство героев (Частично)\n- Ломание вышек/построек", "ru");
     Menu.GetFolder(['Custom Scripts', 'Information', 'Gold Info']).SetTip('Made by: no_frfa\nSOON', "en");
     menuCalcLabel.SetTip('Если включено, скрипт будет рассчитывать вражеское золото (Если будет включено посередине игры, значение золота будет неверным)', 'ru');
     menuCalcLabel.SetTip('SOON', 'en');
-    menuCalcLabel.OnChange(state => { mainGoldInfo.menuCalculate = state.newValue; });
+    menuCalcLabel.OnChange(state => {
+        mainGoldInfo.menuCalculate = state.newValue;
+    });
     mainGoldInfo.menuCalculate = menuCalcLabel.GetValue();
     let menuRenderLabel = Menu.AddToggle(['Custom Scripts', 'Information', 'Gold Info'], 'Render Panel', false).SetNameLocale("ru", "Отрисовка панели");
-    menuRenderLabel.OnChange(state => { mainGoldInfo.menuRender = state.newValue; });
+    menuRenderLabel.OnChange(state => {
+        mainGoldInfo.menuRender = state.newValue;
+    });
     mainGoldInfo.menuRender = menuRenderLabel.GetValue();
     let menuStatusBBLabel = Menu.AddToggle(['Custom Scripts', 'Information', 'Gold Info'], 'Displaying Status Bayback', true).SetNameLocale("ru", "Отображение состояния байбэка");
     menuStatusBBLabel.SetTip("Отображает рядом на панели рядом с героями ВОЗМОЖНОЕ состояние байбека (хватает ли врагу денег на байбек)", "ru");
     menuStatusBBLabel.SetTip("Displays the POSSIBLE state of the buyback next to the heroes on the panel next to the heroes (does the enemy have enough money for the buyback)", "en");
-    menuStatusBBLabel.OnChange(state => { mainGoldInfo.menuStatusBB = state.newValue; });
+    menuStatusBBLabel.OnChange(state => {
+        mainGoldInfo.menuStatusBB = state.newValue;
+    });
     mainGoldInfo.menuStatusBB = menuStatusBBLabel.GetValue();
     let menuCanPanelMoveLabel = Menu.AddToggle(['Custom Scripts', 'Information', 'Gold Info'], 'Moving the panel', false).SetNameLocale("ru", "Перемещение панели");
     menuCanPanelMoveLabel.SetTip("Перемещение панели 'Gold Info' при зажатии Ctrl+ЛКМ", "ru");
     menuCanPanelMoveLabel.SetTip("Moving the 'Gold Info' panel when holding Ctrl + LMB", "en");
-    menuCanPanelMoveLabel.OnChange(state => { mainGoldInfo.menuCanPanelMove = state.newValue; });
+    menuCanPanelMoveLabel.OnChange(state => {
+        mainGoldInfo.menuCanPanelMove = state.newValue;
+    });
     mainGoldInfo.menuCanPanelMove = menuCanPanelMoveLabel.GetValue();
     let menuPanelSettingsLabel_alpha = Menu.AddSlider(['Custom Scripts', 'Information', 'Gold Info', 'Panel Settings'], `PanelTransparency`, 0, 255, 255, 1);
     menuPanelSettingsLabel_alpha.SetTip('Управляет прозрачностью панели', "ru");
     menuPanelSettingsLabel_alpha.SetTip('Controls the transparency of the panel', "en");
-    menuPanelSettingsLabel_alpha.OnChange(state => { mainGoldInfo.menuPanelSettings_aplha = state.newValue; });
+    menuPanelSettingsLabel_alpha.OnChange(state => {
+        mainGoldInfo.menuPanelSettings_aplha = state.newValue;
+    });
     mainGoldInfo.menuPanelSettings_aplha = menuPanelSettingsLabel_alpha.GetValue();
-    let menuHelpButton_panel = Menu.AddButton(['Custom Scripts', 'Information', 'Gold Info', 'Help'], 'Reset Panel', () => { fixButton(); });
+    let menuHelpButton_panel = Menu.AddButton(['Custom Scripts', 'Information', 'Gold Info', 'Help'], 'Reset Panel', () => {
+        fixButton();
+    });
     menuHelpButton_panel.SetTip("Используйте, если столкнулись с какой-то проблемой отрисовки панели", "ru");
     menuHelpButton_panel.SetTip("SOON", "en");
-    mainGoldInfo.menuHelpButton_stat = Menu.AddButton(['Custom Scripts', 'Information', 'Gold Info', 'Help'], 'Reset Stat', () => { fixStat(); });
-    mainGoldInfo.menuHelpButton_stat.SetTip("Используйте, если хотите сбросить статистику у героев \nДанная кнопка может полностью сломать расчёт золота у врагов -> нажмите второй раз для подтверждения (После 15 секунд, кнопка ResetStat вернётся)", "ru");
-    mainGoldInfo.menuHelpButton_stat.SetTip("SOON", "en");
     Menu.SetImage(['Custom Scripts', 'Information'], '~/menu/40x40/info.png');
     mainGoldInfo.CFG = {
         Save: (key, value) => {
@@ -190,6 +263,8 @@ var mainGoldInfo;
                     ];
                     mainGoldInfo.enemyListBuyBackUsed = [[false, 0], [false, 0], [false, 0], [false, 0], [false, 0]];
                     mainGoldInfo.enemyListLength = 0;
+                    if (GameRules.GetGameMode() == 23)
+                        mainGoldInfo.multiplierGold = 2;
                     mainGoldInfo.CFG.Save('GameID', GameRules.GetMatchID().toString());
                     mainGoldInfo.CFG.Save('UsersData', JSON.stringify(mainGoldInfo.enemyList));
                     mainGoldInfo.CFG.Save('UserDataPart2', JSON.stringify(mainGoldInfo.enemyListBuyBackUsed));
@@ -201,6 +276,8 @@ var mainGoldInfo;
                 parsed = JSON.parse(mainGoldInfo.CFG.Read('UserDataPart2', ''));
                 if (parsed != '')
                     mainGoldInfo.enemyListBuyBackUsed = parsed;
+                if (GameRules.GetGameMode() == 23)
+                    mainGoldInfo.multiplierGold = 2;
                 mainGoldInfo.gameStart = true;
                 mainGoldInfo.myHero = EntitySystem.GetLocalHero();
                 mainGoldInfo.myTeam = mainGoldInfo.myHero.GetTeamNum();
@@ -226,7 +303,7 @@ GoldInfoScript.OnUpdate = () => {
                     enemyHeroes.push(hero);
                 }
             }
-            if (enemyHeroes.length) {
+            if (enemyHeroes.length && mainGoldInfo.enemyListLength < 5) {
                 for (let index = 0; index < enemyHeroes.length; index++) {
                     mainGoldInfo.enemyList[index][0] = enemyHeroes[index];
                     mainGoldInfo.enemyList[index][1] = 0;
@@ -238,25 +315,27 @@ GoldInfoScript.OnUpdate = () => {
                 let gameTime = Number((GameRules.GetGameTime() - GameRules.GetPreGameStartTime())) - 90;
                 let timeForGold = 0;
                 let [goldStage1, goldStage2, goldStage3, goldStage4] = [0, 0, 0, 0];
-                mainGoldInfo.bountyCost = (36 + (9 * Number((gameTime / 300).toString().split('.', 1)[0])));
-                if (Number((gameTime / 60).toFixed()) < 5) {
+                if (Number(Number(gameTime / 60).toString().split('.', 1)[0]) < 5) {
                     timeForGold = gameTime / 0.6;
                 }
-                else if (Number((gameTime / 60).toFixed()) >= 5) {
+                else if (Number(Number(gameTime / 60).toString().split('.', 1)[0]) >= 5) {
                     goldStage1 = gameTime / 0.6 * timeForGold;
                     timeForGold = gameTime * 1.76;
                 }
-                else if (Number((gameTime / 60).toFixed()) >= 22) {
+                else if (Number(Number(gameTime / 60).toString().split('.', 1)[0]) >= 22) {
                     goldStage2 = gameTime * 1.76 * timeForGold - goldStage1;
                     timeForGold = gameTime * 1.86;
                 }
-                else if (Number((gameTime / 60).toFixed()) >= 40) {
+                else if (Number(Number(gameTime / 60).toString().split('.', 1)[0]) >= 40) {
                     goldStage3 = gameTime * 1.86 * timeForGold - goldStage1 - goldStage2;
                     timeForGold = gameTime * 2;
                 }
-                else if (Number((gameTime / 60).toFixed()) >= 62) {
+                else if (Number(Number(gameTime / 60).toString().split('.', 1)[0]) >= 62) {
                     goldStage4 = gameTime * 2 * timeForGold - goldStage1 - goldStage2 - goldStage3;
                     timeForGold = gameTime * 2.13;
+                }
+                if (gameTime / 450) {
+                    mainGoldInfo.laneCreepList['bonus_gold'] = Number((gameTime / 450).toString().split('.', 1)[0]);
                 }
                 for (let check of mainGoldInfo.enemyList) {
                     if (check[0])
@@ -276,7 +355,7 @@ GoldInfoScript.OnUpdate = () => {
                         }
                         let TotalGold = 700 + timeForGold + mainGoldInfo.enemyList[index][2] - inventoryCost - goldStage1 - goldStage2 - goldStage3 - goldStage4;
                         mainGoldInfo.enemyList[index][1] = Number(TotalGold.toFixed());
-                        let BuyBackCost = 200 + (700 + timeForGold + mainGoldInfo.enemyList[index][2] + inventoryCost - goldStage1 - goldStage2 - goldStage3 - goldStage4) / 12;
+                        let BuyBackCost = 200 + (700 + timeForGold + mainGoldInfo.enemyList[index][2] + inventoryCost - goldStage1 - goldStage2 - goldStage3 - goldStage4) / 13;
                         mainGoldInfo.enemyList[index][3] = Number(BuyBackCost.toFixed());
                         mainGoldInfo.enemyList[index][4] = !mainGoldInfo.enemyListBuyBackUsed[index][0] ? TotalGold >= BuyBackCost : false;
                         if (mainGoldInfo.enemyListBuyBackUsed[index][0]) {
@@ -293,11 +372,11 @@ GoldInfoScript.OnUpdate = () => {
                     if (!mainGoldInfo.enemyList[index][0])
                         continue;
                     heroesSize++;
-                    let inventory = mainGoldInfo.enemyList[index][0].GetItems(false);
+                    //let inventory: Item[] = mainGoldInfo.enemyList[index][0].GetItems(false);
                     let inventoryCost = 0;
-                    for (let itemInInv of inventory) {
+                    /*for(let itemInInv of inventory) {
                         inventoryCost += itemInInv.GetCost();
-                    }
+                    }*/
                     mainGoldInfo.enemyList[index][1] = 700 + mainGoldInfo.enemyList[index][2] - inventoryCost;
                     let TotalGold = 700 + mainGoldInfo.enemyList[index][2] - inventoryCost;
                     mainGoldInfo.enemyList[index][1] = Number(TotalGold.toFixed());
@@ -359,7 +438,7 @@ GoldInfoScript.OnUpdate = () => {
                     if (mainGoldInfo.menuStatusBB) {
                         let StatusBuyBack = Locale === 'ru' ? 'Нет' : 'No';
                         if (mainGoldInfo.enemyListBuyBackUsed[index][0]) {
-                            StatusBuyBack += ` (${(mainGoldInfo.enemyListBuyBackUsed[index][1] - GameRules.GetGameTime()).toFixed()})` + Locale === 'ru' ? 'сек' : 'sec';
+                            StatusBuyBack += ` (${((mainGoldInfo.enemyListBuyBackUsed[index][1] - GameRules.GetGameTime())).toString().split('.')[0]})` + Locale === 'ru' ? 'сек' : 'sec';
                         }
                         else {
                             if (mainGoldInfo.enemyList[index][4]) {
@@ -384,65 +463,95 @@ GoldInfoScript.OnFireEvent = (event) => {
         if (event.name === 'entity_killed') {
             let attacker = EntityList.GetByIndex(event.GetInt('entindex_attacker'));
             let killed = EntityList.GetByIndex(event.GetInt('entindex_killed'));
-            if (!killed || !attacker.IsHero() || attacker.IsSameTeam(mainGoldInfo.myHero))
+            if (!killed || !attacker)
                 return;
-            if (killed.IsCreep() && attacker.IsHero() && !mainGoldInfo.enemyList[GetIndexHeroInArray(attacker.GetEntityName())][5])
-                addGoldHero(killed, attacker.GetEntityName());
-            if (killed.IsCourier())
-                addGoldHero(null, attacker.GetEntityName(), 25 + (5 * killed.GetCurrentLevel()), true);
-            if (killed.IsTower()) {
-                let Tower = killed.GetUnitName().replace('npc_dota_badguys_', '').replace('npc_dota_goodguys_', '').split('_');
-                let goldFromTower = 0;
-                for (let index = 0; index < Tower.length; index++) {
-                    if (Tower[index] === 'tower1')
-                        goldFromTower = RandomInt(75, 165);
-                    else if (Tower[index] === 'tower2')
-                        goldFromTower = RandomInt(95, 185);
-                    else if (Tower[index] === 'tower3')
-                        goldFromTower = RandomInt(115, 205);
-                    else if (Tower[index] === 'tower4')
-                        goldFromTower = RandomInt(135, 225);
+            if (attacker.IsSameTeam(mainGoldInfo.myHero)) {
+                return;
+            else if (attacker.IsNPC()) {
+                let ownerNpc = attacker.GetOwner();
+                if (!ownerNpc)
+                    return;
+                for (let arrayHero of mainGoldInfo.enemyList) {
+                    if (arrayHero[0] == ownerNpc) {
+                        attacker = ownerNpc;
+                    }
                 }
-                addGoldHero(null, attacker.GetEntityName(), goldFromTower);
+            }
+            else
+                return;
+            if (killed.IsNPC()) {
+                AddGoldFromCreep(attacker, killed);
+            }
+            if (killed.IsCourier()) {
+                AddGold(undefined, undefined, 25 + (5 * killed.GetCurrentLevel()));
+            }
+            if (killed.IsTower()) {
+                let towerNumber = killed.GetUnitName().replace('npc_dota_badguys_', '').replace('npc_dota_goodguys_', '').replace('tower', '').split('_', 1);
+                let gold = Number((((55 + 20 * Number(towerNumber[0])) + (145 + 20 * Number(towerNumber[0]))) / 2).toString().split('.', 1)[0]);
+                AddGold(attacker, gold);
             }
             if (killed.IsStructure()) {
                 let Structure = killed.GetUnitName().replace('npc_dota_badguys_', '').replace('npc_dota_goodguys_', '').split('_');
-                let goldFromStructure = 0;
-                let goldDestroyer = 0;
+                let goldFromStructure = -1;
+                let goldDestroyer = -1;
                 for (let index = 0; index < Structure.length; index++) {
                     if (Structure[index] === 'melee') {
-                        goldDestroyer = RandomInt(90, 135);
+                        goldDestroyer = 112;
                         goldFromStructure = 155;
                     }
                     else if (Structure[index] === 'range') {
-                        goldDestroyer = RandomInt(90, 135);
+                        goldDestroyer = 122;
                         goldFromStructure = 90;
                     }
                     else if (Structure[index] === 'fillers') {
                         goldDestroyer = 68;
                     }
-                    if (goldFromStructure)
-                        addGoldHero(null, attacker.GetEntityName(), goldFromStructure, true);
-                    if (goldDestroyer)
-                        addGoldHero(null, attacker.GetEntityName(), goldDestroyer);
                 }
-                addGoldHero(null, attacker.GetEntityName(), goldFromStructure);
+                AddGold(attacker, goldDestroyer, goldFromStructure);
             }
         }
         if (event.name === 'dota_tower_kill') {
-            if (mainGoldInfo.myTeam != event.GetInt('teamnumber'))
-                addGoldHero(null, null, event.GetInt('gold'), true);
+            if (event.GetInt('teamnumber') != mainGoldInfo.myTeam)
+                AddGold(undefined, undefined, event.GetInt('gold'));
         }
         if (event.name === 'dota_player_kill') {
             if (event.GetInt('neutral') || event.GetInt('greevil'))
                 return;
+            EntityList.GetPlayersList().forEach((player) => {
+                if (player.GetAssignedHero())
+                    if (player.GetAssignedHero().IsSameTeam(mainGoldInfo.myHero))
+                        return;
+                if (player.GetPlayerID() == event.GetInt('victim_userid')) {
+                    if (player.GetAssignedHero().GetModifier('modifier_bounty_hunter_track')) {
+                        let heroes = EntitySystem.GetHeroesList();
+                        let [trackGold, trackGold_self] = [0, 0];
+                        for (let hero of heroes) {
+                            if (hero.GetUnitName() === 'npc_dota_hero_bounty_hunter') {
+                                trackGold = hero.GetAbilityByIndex(5).GetLevelSpecialValueFor('bonus_gold');
+                                trackGold_self = hero.GetAbilityByIndex(5).GetLevelSpecialValueFor('bonus_gold_self');
+                            }
+                        }
+                        let allyInRadius = player.GetAssignedHero().GetHeroesInRadius(1200, Enum.TeamType.TEAM_FRIEND);
+                        for (let radiusHero of allyInRadius) {
+                            for (let arrayHero of mainGoldInfo.enemyList) {
+                                if (radiusHero == arrayHero[0]) {
+                                    if (arrayHero[0].GetUnitName() === 'npc_dota_hero_bounty_hunter')
+                                        arrayHero[2] += trackGold_self;
+                                    else
+                                        arrayHero[2] += trackGold;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
             EntityList.GetPlayersList().forEach((player) => {
                 if (player.GetPlayerID() == event.GetInt('killer1_userid')) {
                     for (let var0 of mainGoldInfo.enemyList) {
                         if (!var0[0])
                             continue;
                         if (var0[0] == player.GetAssignedHero())
-                            addGoldHero(null, player.GetAssignedHero().GetEntityName(), mainGoldInfo.bountyCost);
+                            AddGold(player.GetAssignedHero(), event.GetInt('bounty'));
                     }
                 }
             });
@@ -454,24 +563,49 @@ GoldInfoScript.OnParticleCreate = (event) => {
         if (event.name === 'rune_bounty_owner') {
             if (!event.entity)
                 return;
-            if (event.entity.IsHero()) {
-                for (let var0 of mainGoldInfo.enemyList) {
-                    if (!var0[0])
+            if (event.entity.IsSameTeam(mainGoldInfo.myHero))
+                return;
+            let gameTime = Number((GameRules.GetGameTime() - GameRules.GetPreGameStartTime())) - 90;
+            let bountyCost = (36 + (9 * Number((gameTime / 300).toString().split('.', 1)[0])));
+            let bountyMult = 1;
+            if (event.entity.GetUnitName() === 'npc_dota_hero_alchemist') {
+                bountyMult = event.entity.GetAbilityByIndex(3).GetLevelSpecialValueForFloat('bounty_multiplier');
+            }
+            let heroIndex = GetIndexHeroInArray(event.entity);
+            if (heroIndex) {
+                mainGoldInfo.enemyList[heroIndex][2] += bountyCost * bountyMult;
+            }
+            else {
+                for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
+                    if (mainGoldInfo.enemyList[index][0])
                         continue;
-                    if (var0[0].GetEntityName() === event.entity.GetEntityName())
-                        addGoldHero(null, event.entity.GetEntityName(), mainGoldInfo.bountyCost);
+                    mainGoldInfo.enemyList[index][2] += bountyCost * bountyMult;
                 }
             }
         }
         if (event.name === 'hand_of_midas') {
             if (event.entityForModifiers.IsHero()) {
-                if (GetIndexHeroInArray(event.entityForModifiers.GetEntityName()) >= 0) {
-                    mainGoldInfo.enemyList[GetIndexHeroInArray(event.entityForModifiers.GetEntityName())][5] = true;
+                if (GetIndexHeroInArray(event.entityForModifiers)) {
+                    mainGoldInfo.enemyList[GetIndexHeroInArray(event.entityForModifiers)][5] = true;
                     setTimeout(() => {
-                        mainGoldInfo.enemyList[GetIndexHeroInArray(event.entityForModifiers.GetEntityName())][5] = false;
+                        mainGoldInfo.enemyList[GetIndexHeroInArray(event.entityForModifiers)][5] = false;
                     }, 66);
                 }
-                addGoldHero(null, event.entityForModifiers.GetEntityName(), 160);
+                AddGold(event.entityForModifiers, 160 * mainGoldInfo.multiplierGold);
+            }
+        }
+        if (event.name === 'bounty_hunter_jinada') {
+            for (let arrayHero of mainGoldInfo.enemyList) {
+                if (arrayHero[0] == event.entityForModifiers) {
+                    AddGold(arrayHero[0], arrayHero[0].GetAbilityByIndex(2).GetLevelSpecialValueFor('gold_steal'));
+                }
+            }
+        }
+        if (event.name === 'doom_bringer_devour') {
+            for (let arrayHero of mainGoldInfo.enemyList) {
+                if (arrayHero[0] == event.entity) {
+                    AddGold(arrayHero[0], arrayHero[0].GetAbilityByIndex(1).GetLevelSpecialValueFor('bonus_gold'));
+                }
             }
         }
     }
@@ -487,8 +621,10 @@ GoldInfoScript.OnChatEvent = (event) => {
                         mainGoldInfo.enemyListBuyBackUsed[index][0] = true;
                         mainGoldInfo.enemyListBuyBackUsed[index][1] = GameRules.GetGameTime() + 480;
                         mainGoldInfo.enemyList[index][2] -= mainGoldInfo.enemyList[index][3];
+                        break;
                     }
                 }
+                return;
             }
         });
     }
@@ -531,74 +667,75 @@ function ConvertIndexToHero(parsed) {
     }
     return tmpArray1;
 }
-function addGoldHero(entity_killed, heroName, gold, all) {
-    if (mainGoldInfo.enemyListLength == 0)
-        return;
-    let indexHero = -1;
-    if (!all) {
-        for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
-            if (!mainGoldInfo.enemyList[index][0])
-                continue;
-            if (mainGoldInfo.enemyList[index][0].GetEntityName() === heroName) {
-                indexHero = index;
-                break;
-            }
-        }
-        if (indexHero < 0 || indexHero > 4) {
-            console.log('invalid indexHero: ' + indexHero);
-            return;
-        }
-    }
-    if (entity_killed) {
-        if (entity_killed.IsSameTeam(mainGoldInfo.enemyList[indexHero][0]))
-            return;
-        let entName = entity_killed.GetModelName();
-        let _name = entName.replace('models/creeps/', '').replace('.vmdl', '');
-        let nameSplited = _name.split('/', 1);
-        if (nameSplited[0] === 'lane_creeps') {
-            addGoldCreeps(_name.replace('lane_creeps/', '').split('/'), mainGoldInfo.laneCreepList);
-        }
-        else if (nameSplited[0] === 'neutral_creeps') {
-            addGoldCreeps(_name.replace('neutral_creeps/', '').split('/'), mainGoldInfo.neutralCreepList);
-        }
-        else if (nameSplited[0] === 'roshan') {
-            addGoldRoshan();
-        }
-        else
-            console.log('invalid splitName in GoldInfoScript: ' + nameSplited[0]);
-    }
-    if (gold) {
-        if (all) {
-            for (let var0 of mainGoldInfo.enemyList) {
-                var0[2] += gold;
-            }
-        }
-        else {
-            mainGoldInfo.enemyList[indexHero][2] += gold;
-        }
-    }
-    function addGoldCreeps(var1, var2) {
-        for (let index in var2) {
-            if (var1[var1.length - 1].replace('n_creep_', '').replace('neutral_creep_', '') === var2[index][0]) {
-                mainGoldInfo.enemyList[indexHero][2] += var2[index][1];
-            }
-        }
-    }
-    function addGoldRoshan() {
-        mainGoldInfo.enemyList[indexHero][2] += 245;
-        for (let var0 of mainGoldInfo.enemyList) {
-            var0[2] += 135;
-        }
-    }
-}
-function GetIndexHeroInArray(name) {
+function GetIndexHeroInArray(hero) {
     for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
         if (!mainGoldInfo.enemyList[index][0])
             continue;
-        if (mainGoldInfo.enemyList[index][0].GetEntityName() === name)
+        if (mainGoldInfo.enemyList[index][0] === hero)
             return index;
     }
     return -1;
+}
+function AddGoldFromCreep(hero, creep) {
+    for (let arrayHero of mainGoldInfo.enemyList) {
+        if (!arrayHero[0])
+            continue;
+        if (arrayHero[0] === hero) {
+            let creepName = creep.GetUnitName()
+                .replace('npc_dota_neutral_', '')
+                .replace('npc_dota_creep_', '')
+                .replace('npc_dota_', '')
+                .replace('dire_eidolon', 'eidolon')
+                .replace('furion_treant_1', 'furion_treant_small')
+                .replace('furion_treant_2', 'furion_treant_small')
+                .replace('furion_treant_3', 'furion_treant_small')
+                .replace('furion_treant_4', 'furion_treant_small')
+                .replace('beastmaster_boar_1', 'beastmaster_boar')
+                .replace('beastmaster_boar_2', 'beastmaster_boar')
+                .replace('beastmaster_boar_3', 'beastmaster_boar')
+                .replace('beastmaster_boar_4', 'beastmaster_boar')
+                .replace('lone_druid_bear1', 'lone_druid_bear')
+                .replace('lone_druid_bear2', 'lone_druid_bear')
+                .replace('lone_druid_bear3', 'lone_druid_bear')
+                .replace('lone_druid_bear4', 'lone_druid_bear')
+                .replace('shadow_shaman_ward_1', 'shadow_shaman_ward')
+                .replace('shadow_shaman_ward_2', 'shadow_shaman_ward')
+                .replace('shadow_shaman_ward_3', 'shadow_shaman_ward')
+                .replace('badguys_', '')
+                .replace('goodguys_', '');
+            if (creepName === 'roshan')
+                AddGold(arrayHero[0], 135);
+            if (arrayHero[0].GetUnitName() === 'npc_dota_hero_alchemist') {
+                let goldModifier = hero.GetModifier('modifier_alchemist_goblins_greed').GetStackCount();
+                AddGold(arrayHero[0], goldModifier);
+            }
+            if (mainGoldInfo.laneCreepList[creepName]) {
+                arrayHero[2] += mainGoldInfo.laneCreepList[creepName] * mainGoldInfo.multiplierGold;
+                break;
+            }
+            if (mainGoldInfo.otherCreepList[creepName]) {
+                let bonus = 0;
+                if (creepName === 'observer_wards') {
+                    let gameTime = Number((GameRules.GetGameTime() - GameRules.GetPreGameStartTime())) - 90;
+                    bonus = Number((gameTime / 15).toString().split('.', 1)[0]);
+                }
+                arrayHero[2] += (mainGoldInfo.otherCreepList[creepName] + bonus) * mainGoldInfo.multiplierGold;
+                break;
+            }
+        }
+    }
+}
+function AddGold(hero, gold, GoldAll) {
+    if (hero) {
+        if (gold) {
+            mainGoldInfo.enemyList[GetIndexHeroInArray(hero)][2] += gold;
+        }
+    }
+    if (GoldAll) {
+        for (let arrayHero of mainGoldInfo.enemyList) {
+            arrayHero[2] += GoldAll;
+        }
+    }
 }
 function fixButton() {
     mainGoldInfo.screenSize = Renderer.GetScreenSize();
@@ -607,50 +744,6 @@ function fixButton() {
     Config.WriteFloat("GoldInfo", "posX", mainGoldInfo.posX);
     Config.WriteFloat("GoldInfo", "posY", mainGoldInfo.posY);
 }
-function fixStat() {
-    mainGoldInfo.menuHelpButton_stat.RemoveOption();
-    mainGoldInfo.menuHelpButton_stat = Menu.AddButton(['Custom Scripts', 'Information', 'Gold Info', 'Help'], 'Confirm', () => { confirmAction(); });
-    let time = 15;
-    let updaterTip = setInterval(() => {
-        time--;
-    }, 1000);
-    let timer = setTimeout(() => {
-        mainGoldInfo.menuHelpButton_stat.RemoveOption();
-        mainGoldInfo.menuHelpButton_stat = Menu.AddButton(['Custom Scripts', 'Information', 'Gold Info', 'Help'], 'Reset Stat', () => { fixStat(); });
-        mainGoldInfo.menuHelpButton_stat.SetTip("Используйте, если хотите сбросить статистику у героев \nТак как данная кнопка может полностью сломать расчёт золота у врагов - нажмите второй раз для подтверждения (После 15 секунд, кнопка ResetStat вернётся)", "ru");
-        mainGoldInfo.menuHelpButton_stat.SetTip("SOON", "en");
-        clearInterval(updaterTip);
-    }, 15000);
-    function confirmAction() {
-        clearTimeout(timer);
-        clearInterval(updaterTip);
-        mainGoldInfo.menuHelpButton_stat.RemoveOption();
-        mainGoldInfo.menuHelpButton_stat = Menu.AddButton(['Custom Scripts', 'Information', 'Gold Info', 'Help'], 'Reset Stat', () => { fixStat(); });
-        mainGoldInfo.menuHelpButton_stat.SetTip("Используйте, если хотите сбросить статистику у героев \nТак как данная кнопка может полностью сломать расчёт золота у врагов - нажмите второй раз для подтверждения (После 15 секунд, кнопка ResetStat вернётся)", "ru");
-        mainGoldInfo.menuHelpButton_stat.SetTip("SOON", "en");
-        mainGoldInfo.enemyList = [
-            [null, 0, 0, 0, false, false, null],
-            [null, 0, 0, 0, false, false, null],
-            [null, 0, 0, 0, false, false, null],
-            [null, 0, 0, 0, false, false, null],
-            [null, 0, 0, 0, false, false, null]
-        ];
-        mainGoldInfo.enemyListBuyBackUsed = [[false, 0], [false, 0], [false, 0], [false, 0], [false, 0]];
-        let tmpArray1 = [
-            [-1, 0, 0, 0, false, false, null],
-            [-1, 0, 0, 0, false, false, null],
-            [-1, 0, 0, 0, false, false, null],
-            [-1, 0, 0, 0, false, false, null],
-            [-1, 0, 0, 0, false, false, null]
-        ];
-        mainGoldInfo.CFG.Save('UsersData', JSON.stringify(tmpArray1));
-        mainGoldInfo.CFG.Save('UserDataPart2', JSON.stringify(mainGoldInfo.enemyListBuyBackUsed));
-    }
-}
-function RandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-}
-;
 RegisterScript(GoldInfoScript);
 
 
