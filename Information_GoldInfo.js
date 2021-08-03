@@ -372,11 +372,11 @@ GoldInfoScript.OnUpdate = () => {
                     if (!mainGoldInfo.enemyList[index][0])
                         continue;
                     heroesSize++;
-                    //let inventory: Item[] = mainGoldInfo.enemyList[index][0].GetItems(false);
+                    let inventory = mainGoldInfo.enemyList[index][0].GetItems(false);
                     let inventoryCost = 0;
-                    /*for(let itemInInv of inventory) {
+                    for (let itemInInv of inventory) {
                         inventoryCost += itemInInv.GetCost();
-                    }*/
+                    }
                     mainGoldInfo.enemyList[index][1] = 700 + mainGoldInfo.enemyList[index][2] - inventoryCost;
                     let TotalGold = 700 + mainGoldInfo.enemyList[index][2] - inventoryCost;
                     mainGoldInfo.enemyList[index][1] = Number(TotalGold.toFixed());
@@ -467,6 +467,7 @@ GoldInfoScript.OnFireEvent = (event) => {
                 return;
             if (attacker.IsSameTeam(mainGoldInfo.myHero)) {
                 return;
+            }
             else if (attacker.IsNPC()) {
                 let ownerNpc = attacker.GetOwner();
                 if (!ownerNpc)
