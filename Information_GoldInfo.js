@@ -265,6 +265,8 @@ var mainGoldInfo;
                     mainGoldInfo.enemyListLength = 0;
                     if (GameRules.GetGameMode() == 23)
                         mainGoldInfo.multiplierGold = 2;
+                    else
+                        mainGoldInfo.multiplierGold = 1;
                     mainGoldInfo.CFG.Save('GameID', GameRules.GetMatchID().toString());
                     mainGoldInfo.CFG.Save('UsersData', JSON.stringify(mainGoldInfo.enemyList));
                     mainGoldInfo.CFG.Save('UserDataPart2', JSON.stringify(mainGoldInfo.enemyListBuyBackUsed));
@@ -278,6 +280,8 @@ var mainGoldInfo;
                     mainGoldInfo.enemyListBuyBackUsed = parsed;
                 if (GameRules.GetGameMode() == 23)
                     mainGoldInfo.multiplierGold = 2;
+                else
+                    mainGoldInfo.multiplierGold = 1;
                 mainGoldInfo.gameStart = true;
                 mainGoldInfo.myHero = EntitySystem.GetLocalHero();
                 mainGoldInfo.myTeam = mainGoldInfo.myHero.GetTeamNum();
