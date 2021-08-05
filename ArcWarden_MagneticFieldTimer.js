@@ -147,7 +147,6 @@ arcWarden_magneticField.OnUpdate = () => {
     for (let arrayObj of magneticFieldTimer.magneticsList) {
         if (arrayObj[0] && arrayObj[1] && arrayObj[2]) {
             Renderer.DrawWorldText(magneticFieldTimer.font, arrayObj[2], `${(arrayObj[1] - GameRules.GetGameTime()).toFixed(1)}сек`, 0, Enum.ContentAlign.CenterXY);
-            console.log(magneticFieldTimer.magneticsList);
         }
     }
 };
