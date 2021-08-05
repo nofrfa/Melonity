@@ -105,13 +105,16 @@ var magneticFieldTimer;
     magneticFieldTimer.particleIndexClone = -1;
     magneticFieldTimer.durationSkill = -1;
     magneticFieldTimer.durationSkillClone = -1;
+    magneticFieldTimer.magneticsList = [[-1, -1, null], [-1, -1, null], [-1, -1, null], [-1, -1, null]];
     magneticFieldTimer.font = Renderer.LoadFont('Arial', Config.ReadInt('MagneticTimer', 'textSize', 16), Enum.FontWeight.LIGHT, Enum.FontFlags.OUTLINE);
-    let menuWork_Lable = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Agility', 'Arc Warden', 'MagneticField', 'Timer'], 'Enabled', false).SetNameLocale("ru", "Включить");
+    let menuWork_Lable = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Agility', 'Arc Warden'], 'Display Timer', false).SetNameLocale("ru", "Отображать таймер");
     menuWork_Lable.SetTip('Показывает таймер до исчезновения Magnetic Field', 'ru');
-    menuWork_Lable.SetTip('SOON', 'en');
-    menuWork_Lable.OnChange(state => { magneticFieldTimer.menuWork = state.newValue; });
+    menuWork_Lable.SetTip('Displays the timer until the Magnetic Field disappears', 'en');
+    menuWork_Lable.OnChange(state => {
+        magneticFieldTimer.menuWork = state.newValue;
+    });
     magneticFieldTimer.menuWork = menuWork_Lable.GetValue();
-    let menuTextSize_Label = Menu.AddSlider(['Custom Scripts', 'Heroes', 'Agility', 'Arc Warden', 'MagneticField', 'Timer'], `Text Size`, 1, 32, 16, 1);
+    let menuTextSize_Label = Menu.AddSlider(['Custom Scripts', 'Heroes', 'Agility', 'Arc Warden'], `Text Size`, 1, 32, 16, 1);
     menuTextSize_Label.OnChange(state => {
         magneticFieldTimer.font = Renderer.LoadFont('Arial', state.newValue, Enum.FontWeight.LIGHT, Enum.FontFlags.OUTLINE);
         Config.WriteInt('MagneticTimer', 'textSize', state.newValue);
@@ -119,7 +122,7 @@ var magneticFieldTimer;
     Menu.SetImage(['Custom Scripts', 'Heroes'], "~/menu/40x40/heroes.png");
     Menu.SetImage(['Custom Scripts', 'Heroes', 'Agility'], "~/menu/40x40/agillity.png");
     Menu.SetImage(['Custom Scripts', 'Heroes', 'Agility', 'Arc Warden'], "panorama/images/heroes/icons/npc_dota_hero_arc_warden_png.vtex_c");
-    Menu.SetImage(['Custom Scripts', 'Heroes', 'Agility', 'Arc Warden', 'MagneticField'], 'panorama/images/spellicons/arc_warden_magnetic_field_png.vtex_c');
+    menuWork_Lable.SetImage('panorama/images/spellicons/arc_warden_magnetic_field_png.vtex_c');
     let Load;
     (function (Load) {
         function Init() {
@@ -136,57 +139,48 @@ var magneticFieldTimer;
         Load.Init = Init;
     })(Load = magneticFieldTimer.Load || (magneticFieldTimer.Load = {}));
 })(magneticFieldTimer || (magneticFieldTimer = {}));
-arcWarden_magneticField.OnDraw = () => {
+arcWarden_magneticField.OnUpdate = () => {
     if (!magneticFieldTimer.gameStart || !magneticFieldTimer.menuWork)
         return;
-    if (magneticFieldTimer.magneticCreate && Renderer.WorldToScreen(magneticFieldTimer.particlePos)[2]) {
-        Renderer.SetDrawColor(255, 255, 255, 255);
-        Renderer.DrawWorldText(magneticFieldTimer.font, magneticFieldTimer.particlePos, `${magneticFieldTimer.durationSkill.toFixed(1)}сек`, 0, Enum.ContentAlign.CenterXY);
-    }
-    if (magneticFieldTimer.magneticCreateClone && Renderer.WorldToScreen(magneticFieldTimer.particlePosClone)[2]) {
-        Renderer.SetDrawColor(255, 255, 255, 255);
-        Renderer.DrawWorldText(magneticFieldTimer.font, magneticFieldTimer.particlePosClone, `${magneticFieldTimer.durationSkillClone.toFixed(1)}сек`, 0, Enum.ContentAlign.CenterXY);
+    //console.log(magneticFieldTimer.magneticsList)
+    Renderer.SetDrawColor(255, 255, 255, 255);
+    for (let arrayObj of magneticFieldTimer.magneticsList) {
+        if (arrayObj[0] && arrayObj[1] && arrayObj[2]) {
+            Renderer.DrawWorldText(magneticFieldTimer.font, arrayObj[2], `${(arrayObj[1] - GameRules.GetGameTime()).toFixed(1)}сек`, 0, Enum.ContentAlign.CenterXY);
+            console.log(magneticFieldTimer.magneticsList);
+        }
     }
 };
 arcWarden_magneticField.OnParticleCreate = (particle) => {
     if (particle.name === 'arc_warden_magnetic') {
-        if (magneticFieldTimer.magneticCreate) {
-            magneticFieldTimer.particleIndexClone = particle.index;
-            magneticFieldTimer.durationSkillClone = magneticFieldTimer.myHero.GetAbilityByIndex(1).GetLevelSpecialValueForFloat("duration");
-            magneticFieldTimer.timerClone = setInterval(() => {
-                magneticFieldTimer.durationSkillClone -= 0.1;
-            }, 100);
-            return;
+        for (let arrayVar of magneticFieldTimer.magneticsList) {
+            if (arrayVar[0] < 0) {
+                arrayVar[0] = particle.index;
+                arrayVar[1] = GameRules.GetGameTime() + magneticFieldTimer.myHero.GetAbilityByIndex(1).GetLevelSpecialValueForFloat("duration");
+                break;
+            }
         }
-        magneticFieldTimer.particleIndex = particle.index;
-        magneticFieldTimer.durationSkill = magneticFieldTimer.myHero.GetAbilityByIndex(1).GetLevelSpecialValueForFloat("duration");
-        magneticFieldTimer.timer = setInterval(() => {
-            magneticFieldTimer.durationSkill -= 0.1;
-        }, 100);
     }
 };
 arcWarden_magneticField.OnParticleUpdate = (particle) => {
-    if (particle.index == magneticFieldTimer.particleIndex && particle.controlPoint == 0) {
-        magneticFieldTimer.particlePos = particle.position;
-        magneticFieldTimer.magneticCreate = true;
-    }
-    if (magneticFieldTimer.magneticCreate && particle.index == magneticFieldTimer.particleIndexClone && particle.controlPoint == 0) {
-        magneticFieldTimer.particlePosClone = particle.position;
-        magneticFieldTimer.magneticCreateClone = true;
+    if (particle.controlPoint != 0)
+        return;
+    let vector;
+    for (let arrayVar of magneticFieldTimer.magneticsList) {
+        if (arrayVar[0] == particle.index) {
+            arrayVar[2] = particle.position;
+            break;
+        }
     }
 };
 arcWarden_magneticField.OnParticleDestroy = (particle) => {
-    if (particle.index == magneticFieldTimer.particleIndex) {
-        magneticFieldTimer.magneticCreate = false;
-        magneticFieldTimer.particleIndex = -1;
-        magneticFieldTimer.particlePos.Set(0, 0, 0);
-        clearInterval(magneticFieldTimer.timer);
-    }
-    if (particle.index == magneticFieldTimer.particleIndexClone) {
-        magneticFieldTimer.magneticCreateClone = false;
-        magneticFieldTimer.particleIndexClone = -1;
-        magneticFieldTimer.particlePosClone.Set(0, 0, 0);
-        clearInterval(magneticFieldTimer.timerClone);
+    for (let arrayVar of magneticFieldTimer.magneticsList) {
+        if (arrayVar[0] == particle.index) {
+            arrayVar[0] = -1;
+            arrayVar[2] = null;
+            arrayVar[1] = -1;
+            break;
+        }
     }
 };
 arcWarden_magneticField.OnGameEnd = () => {
