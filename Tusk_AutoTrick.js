@@ -128,7 +128,7 @@ AutoIceShardsTusk.OnUpdate = () => {
     if (TuskIceShards.gameStart && TuskIceShards.menuFunc) {
         if (TuskIceShards.MenuKeyBind.IsKeyDownOnce()) {
             let iceShards = TuskIceShards.myHero.GetAbilityByIndex(0);
-            if (!iceShards.GetCooldown() && TuskIceShards.myHero.GetMana() >= iceShards.GetManaCost()) {
+            if (iceShards.CanCast()) {
                 iceShards.CastPosition(TuskIceShards.myHero.GetAbsOrigin().add(TuskIceShards.myHero.GetAbsRotation().GetForward().Scaled(50)));
             }
         }
