@@ -96,7 +96,6 @@
 let zz_Core = {};
 Menu.SetOrdering(['Custom Scripts', 'Information'], 2);
 Menu.SetOrdering(['Custom Scripts', 'Heroes'], 1);
-Menu.SetOrdering(['Custom Scripts', 'Other'], 0);
 Menu.SetOrdering(['Custom Scripts', 'Heroes', 'Strength'], 2);
 Menu.SetOrdering(['Custom Scripts', 'Heroes', 'Agility'], 1);
 Menu.SetOrdering(['Custom Scripts', 'Heroes', 'Intelligence'], 0);
