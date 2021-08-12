@@ -116,84 +116,85 @@ var antiMageManaVoid;
     antiMageManaVoid.iconDamage = Renderer.LoadImage('panorama/images/hud/skull_stroke_png.vtex_c');
     antiMageManaVoid.iconManaPul = Renderer.LoadImage('panorama/images/hud/reborn/ult_no_mana_psd.vtex_c');
     antiMageManaVoid.iconManaVoid = Renderer.LoadImage('panorama/images/spellicons/antimage_mana_void_png.vtex_c');
-    let menu_Enable_Label = Menu.AddToggle(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info'], 'Enable', false).SetNameLocale("ru", "Включить");
+    let menu_Enable_Label = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info'], 'Enable', false).SetNameLocale("ru", "Включить");
     menu_Enable_Label.OnChange(state => {
         antiMageManaVoid.menu_Enable_State = state.newValue;
     });
     antiMageManaVoid.menu_Enable_State = menu_Enable_Label.GetValue();
-    let menu_CountDamage_Label = Menu.AddToggle(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info'], 'Display amount damage', false).SetNameLocale("ru", "Отображать количество урона");
+    let menu_CountDamage_Label = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info'], 'Display amount damage', false).SetNameLocale("ru", "Отображать количество урона");
     menu_CountDamage_Label.SetTip('Displays the amount of magic damage that will be dealt from the ultimate', 'en');
     menu_CountDamage_Label.SetTip('Отображает количество магического урона, который будет нанесен от ультимейта', 'ru');
     menu_CountDamage_Label.OnChange(state => {
         antiMageManaVoid.menu_CountDamage_State = state.newValue;
     });
     antiMageManaVoid.menu_CountDamage_State = menu_CountDamage_Label.GetValue();
-    let menu_CountDamageEach_Label = Menu.AddToggle(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info'], 'Display for each enemy', false).SetNameLocale("ru", "Отображать для каждого врага");
+    let menu_CountDamageEach_Label = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info'], 'Display for each enemy', false).SetNameLocale("ru", "Отображать для каждого врага");
     menu_CountDamageEach_Label.SetTip('It will display how much damage everyone will receive from applying the ultimate to the best damage target', 'en');
     menu_CountDamageEach_Label.SetTip('Будет отображать сколько урона получит каждый от применения ультимейта на лучшую цель по урону', 'ru');
     menu_CountDamageEach_Label.OnChange(state => {
         antiMageManaVoid.menu_CountDamageEach_State = state.newValue;
     });
     antiMageManaVoid.menu_CountDamageEach_State = menu_CountDamageEach_Label.GetValue();
-    let menu_ColorPickerSkull_Label = Menu.AddColorPickerBlock(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Skull', 'Color'], 255, 0, 0, 255);
+    let menu_ColorPickerSkull_Label = Menu.AddColorPickerBlock(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Skull', 'Color'], 255, 0, 0, 255);
     menu_ColorPickerSkull_Label.OnChange(state => {
         antiMageManaVoid.menu_ColorPickerSkull_State = state.newValue;
     });
     antiMageManaVoid.menu_ColorPickerSkull_State = menu_ColorPickerSkull_Label.GetValue();
-    let menu_PosSkull_X_Label = Menu.AddSlider(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Skull', 'Position'], `X offset`, -300, 300, 0, 1).SetNameLocale("ru", 'Смещение по X');
+    let menu_PosSkull_X_Label = Menu.AddSlider(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Skull', 'Position'], `X offset`, -300, 300, 0, 1).SetNameLocale("ru", 'Смещение по X');
     menu_PosSkull_X_Label.OnChange(state => {
         antiMageManaVoid.menu_PosSkull_X_State = state.newValue;
     });
     antiMageManaVoid.menu_PosSkull_X_State = menu_PosSkull_X_Label.GetValue();
-    let menu_PosSkull_Y_Label = Menu.AddSlider(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Skull', 'Position'], `Y offset`, -300, 300, 0, 1).SetNameLocale("ru", 'Смещение по Y');
+    let menu_PosSkull_Y_Label = Menu.AddSlider(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Skull', 'Position'], `Y offset`, -300, 300, 0, 1).SetNameLocale("ru", 'Смещение по Y');
     menu_PosSkull_Y_Label.OnChange(state => {
         antiMageManaVoid.menu_PosSkull_Y_State = state.newValue;
     });
     antiMageManaVoid.menu_PosSkull_Y_State = menu_PosSkull_Y_Label.GetValue();
-    let menu_PosRhomb_X_Label = Menu.AddSlider(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Rhomb', 'Position'], `X offset`, -300, 300, 0, 1).SetNameLocale("ru", 'Смещение по X');
+    let menu_PosRhomb_X_Label = Menu.AddSlider(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Rhomb', 'Position'], `X offset`, -300, 300, 0, 1).SetNameLocale("ru", 'Смещение по X');
     menu_PosRhomb_X_Label.OnChange(state => {
         antiMageManaVoid.menu_PosRhomb_X_State = state.newValue;
     });
     antiMageManaVoid.menu_PosRhomb_X_State = menu_PosRhomb_X_Label.GetValue();
-    let menu_PosRhomb_Y_Label = Menu.AddSlider(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Rhomb', 'Position'], `Y offset`, -300, 300, 0, 1).SetNameLocale("ru", 'Смещение по Y');
+    let menu_PosRhomb_Y_Label = Menu.AddSlider(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Rhomb', 'Position'], `Y offset`, -300, 300, 0, 1).SetNameLocale("ru", 'Смещение по Y');
     menu_PosRhomb_Y_Label.OnChange(state => {
         antiMageManaVoid.menu_PosRhomb_Y_State = state.newValue;
     });
     antiMageManaVoid.menu_PosRhomb_Y_State = menu_PosRhomb_Y_Label.GetValue();
-    let menu_ColorPickerDamage_Label = Menu.AddColorPickerBlock(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Text', 'Color'], 255, 255, 255, 255);
+    let menu_ColorPickerDamage_Label = Menu.AddColorPickerBlock(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Text', 'Color'], 255, 255, 255, 255);
     menu_ColorPickerDamage_Label.OnChange(state => {
         antiMageManaVoid.menu_ColorPickerDamage_State = state.newValue;
     });
     antiMageManaVoid.menu_ColorPickerDamage_State = menu_ColorPickerDamage_Label.GetValue();
-    let menu_PosText_X_Label = Menu.AddSlider(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Text', 'Position'], `X offset`, -300, 300, 0, 1).SetNameLocale("ru", 'Смещение по X');
+    let menu_PosText_X_Label = Menu.AddSlider(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Text', 'Position'], `X offset`, -300, 300, 0, 1).SetNameLocale("ru", 'Смещение по X');
     menu_PosText_X_Label.OnChange(state => {
         antiMageManaVoid.menu_PosText_X_State = state.newValue;
     });
     antiMageManaVoid.menu_PosText_X_State = menu_PosText_X_Label.GetValue();
-    let menu_PosText_Y_Label = Menu.AddSlider(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Text', 'Position'], `Y offset`, -300, 300, 0, 1).SetNameLocale("ru", 'Смещение по Y');
+    let menu_PosText_Y_Label = Menu.AddSlider(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Text', 'Position'], `Y offset`, -300, 300, 0, 1).SetNameLocale("ru", 'Смещение по Y');
     menu_PosText_Y_Label.OnChange(state => {
         antiMageManaVoid.menu_PosText_Y_State = state.newValue;
     });
     antiMageManaVoid.menu_PosText_Y_State = menu_PosText_Y_Label.GetValue();
-    let menu_TextManaVoidIcon_Label = Menu.AddToggle(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Text'], 'Display ManaVoid Icon', true).SetNameLocale("ru", "Отображать иконку ManaVoid");
+    let menu_TextManaVoidIcon_Label = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Text'], 'Display ManaVoid Icon', true).SetNameLocale("ru", "Отображать иконку ManaVoid");
     menu_TextManaVoidIcon_Label.OnChange(state => {
         antiMageManaVoid.menu_TextManaVoidIcon_State = state.newValue;
     });
     antiMageManaVoid.menu_TextManaVoidIcon_State = menu_TextManaVoidIcon_Label.GetValue();
-    Menu.GetFolder(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info']).SetTip(`Скрипт будет отображать:\nУ кого самый большой максимум маны - синий ромб\nОт кого будет самый большой урон ультой - череп (цвет можно настроить. По умолчанию: красный)`, 'ru');
-    Menu.GetFolder(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info']).SetTip('The script will display who has the biggest mana-pul and from whom will be the biggest damage to the ultimate', 'en');
-    Menu.GetFolder(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings']).SetNameLocale('ru', 'Настройки');
-    Menu.GetFolder(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Skull']).SetNameLocale('ru', 'Череп');
-    Menu.GetFolder(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Skull', 'Color']).SetNameLocale('ru', 'Цвет');
-    Menu.GetFolder(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Skull', 'Position']).SetNameLocale('ru', 'Позиция');
-    Menu.GetFolder(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Rhomb']).SetNameLocale('ru', 'Ромб');
-    Menu.GetFolder(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Rhomb', 'Position']).SetNameLocale('ru', 'Позиция');
-    Menu.GetFolder(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Text']).SetNameLocale('ru', 'Текст');
-    Menu.GetFolder(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Text', 'Color']).SetNameLocale('ru', 'Цвет');
-    Menu.GetFolder(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Text', 'Position']).SetNameLocale('ru', 'Позиция');
-    Menu.SetImage(['Custom Scripts', 'Agility'], '~/menu/40x40/agillity.png');
-    Menu.SetImage(['Custom Scripts', 'Agility', 'Anti-Mage'], 'panorama/images/heroes/icons/npc_dota_hero_antimage_png.vtex_c');
-    Menu.SetImage(['Custom Scripts', 'Agility', 'Anti-Mage', 'ManaVoid Info'], 'panorama/images/spellicons/antimage_mana_void_png.vtex_c');
+    Menu.GetFolder(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info']).SetTip(`Скрипт будет отображать:\nУ кого самый большой максимум маны - синий ромб\nОт кого будет самый большой урон ультой - череп (цвет можно настроить. По умолчанию: красный)`, 'ru');
+    Menu.GetFolder(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info']).SetTip('The script will display who has the biggest mana-pul and from whom will be the biggest damage to the ultimate', 'en');
+    Menu.GetFolder(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings']).SetNameLocale('ru', 'Настройки');
+    Menu.GetFolder(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Skull']).SetNameLocale('ru', 'Череп');
+    Menu.GetFolder(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Skull', 'Color']).SetNameLocale('ru', 'Цвет');
+    Menu.GetFolder(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Skull', 'Position']).SetNameLocale('ru', 'Позиция');
+    Menu.GetFolder(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Rhomb']).SetNameLocale('ru', 'Ромб');
+    Menu.GetFolder(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Rhomb', 'Position']).SetNameLocale('ru', 'Позиция');
+    Menu.GetFolder(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Text']).SetNameLocale('ru', 'Текст');
+    Menu.GetFolder(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Text', 'Color']).SetNameLocale('ru', 'Цвет');
+    Menu.GetFolder(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info', 'Settings', 'Text', 'Position']).SetNameLocale('ru', 'Позиция');
+    Menu.SetImage(['Custom Scripts', 'Heroes'], "~/menu/40x40/heroes.png");
+    Menu.SetImage(['Custom Scripts', 'Heroes', 'Agility'], '~/menu/40x40/agillity.png');
+    Menu.SetImage(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage'], 'panorama/images/heroes/icons/npc_dota_hero_antimage_png.vtex_c');
+    Menu.SetImage(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info'], 'panorama/images/spellicons/antimage_mana_void_png.vtex_c');
     let Load;
     (function (Load) {
         function Init() {
