@@ -99,10 +99,17 @@ var TuskIceShards;
     TuskIceShards.HIndex = 'npc_dota_hero_tusk';
     TuskIceShards.gameStart = false;
     TuskIceShards.menuFunc = false;
-    TuskIceShards.Team = 0;
-    let menuLabel = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Strength', 'Tusk', 'Trick'], 'Включить', false).SetNameLocale('Трюк', "ru").SetTip('CustomScript');
-    menuLabel.OnChange(state => { TuskIceShards.menuFunc = state.newValue; });
+    TuskIceShards.menuCursPosUse = false;
+    let menuLabel = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Strength', 'Tusk', 'Trick'], 'Enable', false).SetNameLocale('Трюк', "ru");
+    menuLabel.OnChange(state => {
+        TuskIceShards.menuFunc = state.newValue;
+    });
     TuskIceShards.menuFunc = menuLabel.GetValue();
+    let menuCursPosUseLabel = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Strength', 'Tusk', 'Trick'], 'Use in the direction of the cursor', false).SetNameLocale('Использовать по направлению курсора', "ru");
+    menuCursPosUseLabel.OnChange(state => {
+        TuskIceShards.menuCursPosUse = state.newValue;
+    });
+    TuskIceShards.menuCursPosUse = menuCursPosUseLabel.GetValue();
     TuskIceShards.MenuKeyBind = Menu.AddKeyBind(['Custom Scripts', 'Heroes', 'Strength', 'Tusk', 'Trick'], 'Клавиша активации', Enum.ButtonCode.KEY_NONE);
     Menu.SetImage(['Custom Scripts', 'Heroes'], "~/menu/40x40/heroes.png");
     Menu.SetImage(['Custom Scripts', 'Heroes', 'Strength'], "~/menu/40x40/strength.png");
@@ -112,8 +119,6 @@ var TuskIceShards;
         function Init() {
             if (GameRules.IsActiveGame() && EntitySystem.GetLocalHero().GetUnitName() === TuskIceShards.HIndex) {
                 TuskIceShards.myHero = EntitySystem.GetLocalHero();
-                TuskIceShards.myPlayer = EntitySystem.GetLocalPlayer();
-                TuskIceShards.Team = TuskIceShards.myHero.GetTeamNum();
                 TuskIceShards.gameStart = true;
             }
             if (!TuskIceShards.myHero || !TuskIceShards.myHero.IsExist() || TuskIceShards.myHero.GetUnitName() == null) {
@@ -129,7 +134,10 @@ AutoIceShardsTusk.OnUpdate = () => {
         if (TuskIceShards.MenuKeyBind.IsKeyDownOnce()) {
             let iceShards = TuskIceShards.myHero.GetAbilityByIndex(0);
             if (iceShards.CanCast()) {
-                iceShards.CastPosition(TuskIceShards.myHero.GetAbsOrigin().add(TuskIceShards.myHero.GetAbsRotation().GetForward().Scaled(50)));
+                if (TuskIceShards.menuCursPosUse)
+                    iceShards.CastPosition(Convert(Input.GetWorldCursorPos().add(TuskIceShards.myHero.GetAbsRotation().GetForward().Scaled(50))));
+                else
+                    iceShards.CastPosition(TuskIceShards.myHero.GetAbsOrigin().add(TuskIceShards.myHero.GetAbsRotation().GetForward().Scaled(50)));
             }
         }
     }
@@ -138,6 +146,9 @@ AutoIceShardsTusk.OnGameEnd = () => {
     TuskIceShards.gameStart = false;
 };
 AutoIceShardsTusk.OnScriptLoad = AutoIceShardsTusk.OnGameStart = TuskIceShards.Load.Init;
+function Convert(position, addEntity = EntitySystem.GetLocalHero()) {
+    return addEntity.GetAbsOrigin().add(position.sub(addEntity.GetAbsOrigin()).Normalized().Scaled(1.3));
+}
 RegisterScript(AutoIceShardsTusk);
 
 
