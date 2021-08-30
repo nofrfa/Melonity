@@ -222,7 +222,7 @@ var centaurCombo_Custom;
                     }
                 }
             }
-            if (menu_ComboKey.IsKeyDown() && Engine.OnceAt(0.2)) {
+            if (menu_ComboKey.IsKeyDown()) {
                 let target = GetNearHeroInRadius(Input.GetWorldCursorPos());
                 if (!menu_TargetLock) {
                     if (target && target.IsExist())
@@ -240,223 +240,229 @@ var centaurCombo_Custom;
                         SendOrderMovePos(Input.GetWorldCursorPos());
                     }
                 }
-                if (comboTarget.HasModifier('modifier_item_blade_mail_reflect') && menu_InBM) {
-                    SendOrderMovePos(Input.GetWorldCursorPos());
-                    return;
-                }
-                if (comboTarget && comboTarget.IsExist()) {
-                    let [linken, mirror] = [comboTarget.GetItem('item_sphere', true), comboTarget.GetItem('item_mirror_shield', false)];
-                    if (linken && linken.CanCast() || mirror && mirror.CanCast()) {
-                        let linkenBrokItems = menu_LinkensItems.GetValue();
-                        for (let brokObj of linkenBrokItems) {
-                            let vi = myHero.GetItem(brokObj, false);
-                            if (vi) {
-                                if (vi.IsExist() && CustomCanCast(vi)) {
-                                    vi.CastTarget(comboTarget);
-                                    break;
+                if (Engine.OnceAt(0.2)) {
+                    if (comboTarget.HasModifier('modifier_item_blade_mail_reflect') && menu_InBM) {
+                        SendOrderMovePos(Input.GetWorldCursorPos());
+                        return;
+                    }
+                    if (comboTarget && comboTarget.IsExist()) {
+                        let [linken, mirror] = [comboTarget.GetItem('item_sphere', true), comboTarget.GetItem('item_mirror_shield', false)];
+                        if (linken && linken.CanCast() || mirror && mirror.CanCast()) {
+                            let linkenBrokItems = menu_LinkensItems.GetValue();
+                            for (let brokObj of linkenBrokItems) {
+                                let vi = myHero.GetItem(brokObj, false);
+                                if (vi) {
+                                    if (vi.IsExist() && CustomCanCast(vi)) {
+                                        vi.CastTarget(comboTarget);
+                                        break;
+                                    }
                                 }
-                            }
-                            else {
-                                let abil = myHero.GetAbility(brokObj);
-                                if (abil && abil.IsExist() && abil.CanCast()) {
-                                    abil.CastTarget(comboTarget);
-                                    break;
+                                else {
+                                    let abil = myHero.GetAbility(brokObj);
+                                    if (abil && abil.IsExist() && abil.CanCast()) {
+                                        abil.CastTarget(comboTarget);
+                                        break;
+                                    }
                                 }
                             }
                         }
-                    }
-                    let [centaur_hoof_stomp, centaur_double_edge, centaur_stampede] = [undefined, undefined, undefined];
-                    let [edgeCasted, stampedeCasted] = [false, false];
-                    if (menu_AbilitiesList.IsEnabled('centaur_hoof_stomp')) {
-                        centaur_hoof_stomp = myHero.GetAbilityByIndex(0);
-                        if (centaur_hoof_stomp.CanCast()) {
-                            if (TargetInRadius(comboTarget, 330, myHero)) {
-                                centaur_hoof_stomp.CastNoTarget();
+                        let [centaur_hoof_stomp, centaur_double_edge, centaur_stampede] = [undefined, undefined, undefined];
+                        let [edgeCasted, stampedeCasted] = [false, false];
+                        if (menu_AbilitiesList.IsEnabled('centaur_hoof_stomp')) {
+                            centaur_hoof_stomp = myHero.GetAbilityByIndex(0);
+                            if (centaur_hoof_stomp.CanCast()) {
+                                if (TargetInRadius(comboTarget, 330, myHero)) {
+                                    centaur_hoof_stomp.CastNoTarget();
+                                    stompCasted = true;
+                                    stompTime = GameRules.GetGameTime();
+                                }
+                                else
+                                    SendOrderMovePos(comboTarget.GetAbsOrigin());
+                            }
+                            else if (!centaur_hoof_stomp.CanCast()) {
                                 stompCasted = true;
-                                stompTime = GameRules.GetGameTime();
                             }
-                            else
-                                SendOrderMovePos(comboTarget.GetAbsOrigin());
                         }
-                        else if (!centaur_hoof_stomp.CanCast()) {
+                        else
                             stompCasted = true;
-                        }
-                    }
-                    else
-                        stompCasted = true;
-                    if (menu_AbilitiesList.IsEnabled('centaur_double_edge')) {
-                        centaur_double_edge = myHero.GetAbilityByIndex(1);
-                        if (centaur_double_edge.CanCast()) {
-                            if (menu_DoubleEdgeMinHp > 0) {
-                                let percentHp = myHero.GetHealth() / myHero.GetMaxHealth() * 100;
-                                if (percentHp >= menu_DoubleEdgeMinHp) {
+                        if (menu_AbilitiesList.IsEnabled('centaur_double_edge')) {
+                            centaur_double_edge = myHero.GetAbilityByIndex(1);
+                            if (centaur_double_edge.CanCast()) {
+                                if (menu_DoubleEdgeMinHp > 0) {
+                                    let percentHp = myHero.GetHealth() / myHero.GetMaxHealth() * 100;
+                                    if (percentHp >= menu_DoubleEdgeMinHp) {
+                                        centaur_double_edge.CastTarget(comboTarget);
+                                        edgeCasted = true;
+                                    }
+                                }
+                                else {
                                     centaur_double_edge.CastTarget(comboTarget);
                                     edgeCasted = true;
                                 }
                             }
-                            else {
-                                centaur_double_edge.CastTarget(comboTarget);
+                            else
                                 edgeCasted = true;
+                        }
+                        if (menu_AbilitiesList.IsEnabled('centaur_stampede')) {
+                            centaur_stampede = myHero.GetAbilityByIndex(5);
+                            if (centaur_stampede.CanCast()) {
+                                if (TargetInRadius(comboTarget, 105, myHero))
+                                    centaur_stampede.CastNoTarget();
                             }
+                            else
+                                stampedeCasted = true;
                         }
-                        else
-                            edgeCasted = true;
-                    }
-                    if (menu_AbilitiesList.IsEnabled('centaur_stampede')) {
-                        centaur_stampede = myHero.GetAbilityByIndex(5);
-                        if (centaur_stampede.CanCast()) {
-                            if (TargetInRadius(comboTarget, 105, myHero))
-                                centaur_stampede.CastNoTarget();
-                        }
-                        else
-                            stampedeCasted = true;
-                    }
-                    for (let item of item_Images) {
-                        let invItem = myHero.GetItem(item, false);
-                        if (!invItem || !invItem.IsExist() || !menu_ItemsList.IsEnabled(invItem) || !CustomCanCast(invItem))
-                            continue;
-                        if (invItem.GetBehavior() & Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_UNIT_TARGET) {
-                            if (invItem.GetTargetTeam() != myHero.GetTeamNum())
-                                invItem.CastTarget(myHero);
-                            else {
-                                if (item === 'item_abyssal_blade') {
-                                    if (GameRules.GetGameTime() - stompTime >= myHero.GetAbilityByIndex(0).GetLevelSpecialValueForFloat('stun_duration') + 0.6) {
-                                        if (CustomCanCast(invItem))
-                                            invItem.CastTarget(comboTarget);
-                                        abyssalTime = GameRules.GetGameTime();
-                                        abyssalCasted = true;
+                        for (let item of item_Images) {
+                            let invItem = myHero.GetItem(item, false);
+                            if (!invItem || !invItem.IsExist() || !menu_ItemsList.IsEnabled(invItem) || !CustomCanCast(invItem))
+                                continue;
+                            if (invItem.GetBehavior() & Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_UNIT_TARGET) {
+                                if (invItem.GetTargetTeam() != myHero.GetTeamNum())
+                                    invItem.CastTarget(myHero);
+                                else {
+                                    if (item === 'item_abyssal_blade') {
+                                        if (GameRules.GetGameTime() - stompTime >= myHero.GetAbilityByIndex(0).GetLevelSpecialValueForFloat('stun_duration') + 0.6) {
+                                            if (CustomCanCast(invItem))
+                                                invItem.CastTarget(comboTarget);
+                                            abyssalTime = GameRules.GetGameTime();
+                                            abyssalCasted = true;
+                                        }
                                     }
-                                }
-                                else if (item === 'item_sheepstick') {
-                                    let abyssal = myHero.GetItem('item_abyssal_blade', true);
-                                    if (abyssal && abyssalCasted) {
-                                        if (menu_ItemsList.IsEnabled(abyssal)) {
-                                            if (!CustomCanCast(abyssal)) {
-                                                if (GameRules.GetGameTime() - abyssalTime >= abyssal.GetLevelSpecialValueForFloat('stun_duration') - 0.6) {
-                                                    if (CustomCanCast(invItem)) {
-                                                        invItem.CastTarget(comboTarget);
-                                                        hexCasted = true;
+                                    else if (item === 'item_sheepstick') {
+                                        let abyssal = myHero.GetItem('item_abyssal_blade', true);
+                                        if (abyssal && abyssalCasted) {
+                                            if (menu_ItemsList.IsEnabled(abyssal)) {
+                                                if (!CustomCanCast(abyssal)) {
+                                                    if (GameRules.GetGameTime() - abyssalTime >= abyssal.GetLevelSpecialValueForFloat('stun_duration') - 0.6) {
+                                                        if (CustomCanCast(invItem)) {
+                                                            invItem.CastTarget(comboTarget);
+                                                            hexCasted = true;
+                                                        }
+                                                        else
+                                                            hexCasted = true;
                                                     }
-                                                    else
-                                                        hexCasted = true;
                                                 }
                                             }
                                         }
-                                    }
-                                    else if (!abyssal && stompCasted || abyssal && !abyssal.CanCast() && stompCasted) {
-                                        if (GameRules.GetGameTime() - stompTime >= myHero.GetAbilityByIndex(0).GetLevelSpecialValueForFloat('stun_duration') + 0.4) {
-                                            if (CustomCanCast(invItem)) {
-                                                invItem.CastTarget(comboTarget);
-                                                hexCasted = true;
+                                        else if (!abyssal && stompCasted || abyssal && !abyssal.CanCast() && stompCasted) {
+                                            if (GameRules.GetGameTime() - stompTime >= myHero.GetAbilityByIndex(0).GetLevelSpecialValueForFloat('stun_duration') + 0.4) {
+                                                if (CustomCanCast(invItem)) {
+                                                    invItem.CastTarget(comboTarget);
+                                                    hexCasted = true;
+                                                }
+                                                else
+                                                    hexCasted = true;
                                             }
-                                            else
-                                                hexCasted = true;
                                         }
                                     }
-                                }
-                                else
-                                    invItem.CastTarget(comboTarget);
-                            }
-                        }
-                        if (invItem.GetBehavior() & Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_NO_TARGET) {
-                            if (invItem.GetAOERadius()) {
-                                if (TargetInRadius(comboTarget, invItem.GetAOERadius(), myHero))
-                                    invItem.CastNoTarget();
-                            }
-                            if (!invItem.GetToggleState())
-                                invItem.Toggle();
-                            invItem.CastNoTarget();
-                            continue;
-                        }
-                        if (invItem.GetBehavior() & Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_POINT) {
-                            if (invItem.GetCastRange()) {
-                                CastItemOnBestPos(invItem, comboTarget, myHero, invItem.GetCastRange(), invItem.GetAOERadius());
-                            }
-                            else if (invItem.GetAOERadius()) {
-                                CastItemOnBestPos(invItem, comboTarget, myHero, invItem.GetAOERadius(), invItem.GetAOERadius());
-                            }
-                        }
-                    }
-                    if (menu_ItemsList.IsEnabled('item_blink')) {
-                        let g_blink = () => {
-                            for (let i = 0; i < 6; i++) {
-                                let q = myHero.GetItemByIndex(+i);
-                                if (q && q.IsExist() && q.GetName().endsWith('_blink')) {
-                                    return q;
+                                    else
+                                        invItem.CastTarget(comboTarget);
                                 }
                             }
-                        };
-                        if (g_blink() && CustomCanCast(g_blink())) {
-                            CastItemOnBestPos(g_blink(), comboTarget, myHero, g_blink().GetAOERadius(), g_blink().GetAOERadius());
-                        }
-                    }
-                    if (menu_ItemsList.IsEnabled('item_dagon_5')) {
-                        let g_dagon = () => {
-                            for (let i = 0; i < 6; i++) {
-                                let q = myHero.GetItemByIndex(+i);
-                                if (q && q.IsExist() && q.GetName().startsWith('item_dagon')) {
-                                    return q;
+                            if (invItem.GetBehavior() & Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_NO_TARGET) {
+                                if (item === 'item_ex_machina')
+                                    continue;
+                                if (invItem.GetAOERadius()) {
+                                    if (TargetInRadius(comboTarget, invItem.GetAOERadius(), myHero))
+                                        invItem.CastNoTarget();
+                                }
+                                if (!invItem.GetToggleState())
+                                    invItem.Toggle();
+                                invItem.CastNoTarget();
+                                continue;
+                            }
+                            if (invItem.GetBehavior() & Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_POINT) {
+                                if (invItem.GetCastRange()) {
+                                    CastItemOnBestPos(invItem, comboTarget, myHero, invItem.GetCastRange(), invItem.GetAOERadius());
+                                }
+                                else if (invItem.GetAOERadius()) {
+                                    CastItemOnBestPos(invItem, comboTarget, myHero, invItem.GetAOERadius(), invItem.GetAOERadius());
                                 }
                             }
-                        };
-                        let dagon = g_dagon();
-                        if (dagon && CustomCanCast(dagon) && TargetInRadius(comboTarget, dagon.GetAOERadius(), myHero)) {
-                            dagon.CastTarget(comboTarget);
                         }
-                    }
-                    if (menu_ItemsList.IsEnabled('item_fallen_sky')) {
-                        let fs = myHero.GetItem('item_fallen_sky', false);
-                        if (fs && CustomCanCast(fs)) {
-                            CastItemOnBestPos(fs, comboTarget, myHero, 630, 1200);
-                            fallenCasted = true;
+                        if (menu_ItemsList.IsEnabled('item_blink')) {
+                            let g_blink = () => {
+                                for (let i = 0; i < 6; i++) {
+                                    let q = myHero.GetItemByIndex(+i);
+                                    if (q && q.IsExist() && q.GetName().endsWith('_blink')) {
+                                        return q;
+                                    }
+                                }
+                            };
+                            if (g_blink() && CustomCanCast(g_blink())) {
+                                CastItemOnBestPos(g_blink(), comboTarget, myHero, g_blink().GetAOERadius(), g_blink().GetAOERadius());
+                            }
+                        }
+                        if (menu_ItemsList.IsEnabled('item_dagon_5')) {
+                            let g_dagon = () => {
+                                for (let i = 0; i < 6; i++) {
+                                    let q = myHero.GetItemByIndex(+i);
+                                    if (q && q.IsExist() && q.GetName().startsWith('item_dagon')) {
+                                        return q;
+                                    }
+                                }
+                            };
+                            let dagon = g_dagon();
+                            if (dagon && CustomCanCast(dagon) && TargetInRadius(comboTarget, dagon.GetAOERadius(), myHero)) {
+                                dagon.CastTarget(comboTarget);
+                            }
+                        }
+                        if (menu_ItemsList.IsEnabled('item_fallen_sky')) {
+                            let fs = myHero.GetItem('item_fallen_sky', false);
+                            if (fs && CustomCanCast(fs)) {
+                                CastItemOnBestPos(fs, comboTarget, myHero, 630, 1200);
+                                fallenCasted = true;
+                            }
+                            else
+                                fallenCasted = true;
                         }
                         else
                             fallenCasted = true;
-                    }
-                    else
-                        fallenCasted = true;
-                    if (stompCasted && edgeCasted && stampedeCasted && fallenCasted) {
-                        if (menu_ItemsList.IsEnabled('item_ex_machina')) {
-                            let emach = myHero.GetItem('item_ex_machina', false);
-                            if (emach && CustomCanCast(emach)) {
-                                let [abyssal, hex] = [myHero.GetItem('item_abyssal_blade', true), myHero.GetItem('item_sheepstick', true)];
-                                if (!abyssal) {
-                                    abyssalCasted = true;
+                        if (stompCasted && edgeCasted && stampedeCasted && fallenCasted) {
+                            if (menu_ItemsList.IsEnabled('item_ex_machina')) {
+                                let emach = myHero.GetItem('item_ex_machina', false);
+                                if (emach && CustomCanCast(emach)) {
+                                    let [abyssal, hex] = [myHero.GetItem('item_abyssal_blade', true), myHero.GetItem('item_sheepstick', true)];
+                                    if (!abyssal) {
+                                        abyssalCasted = true;
+                                    }
+                                    if (!hex) {
+                                        hexCasted = true;
+                                    }
+                                    if (abyssalCasted && hexCasted) {
+                                        emach.CastNoTarget();
+                                        machinaCasted = true;
+                                        abyssalCasted = false;
+                                        hexCasted = false;
+                                        fallenCasted = false;
+                                    }
                                 }
-                                if (!hex) {
-                                    hexCasted = true;
-                                }
-                                if (abyssalCasted && hexCasted) {
-                                    emach.CastNoTarget();
+                                else
                                     machinaCasted = true;
-                                    abyssalCasted = false;
-                                    hexCasted = false;
-                                    fallenCasted = false;
+                            }
+                            if (menu_ItemsList.IsEnabled('item_mask_of_madness') && machinaCasted) {
+                                let mask = myHero.GetItem('item_mask_of_madness', true);
+                                if (mask && CustomCanCast(mask)) {
+                                    mask.CastNoTarget();
                                 }
                             }
-                            else
-                                machinaCasted = true;
                         }
-                        if (menu_ItemsList.IsEnabled('item_mask_of_madness') && machinaCasted) {
-                            let mask = myHero.GetItem('item_mask_of_madness', true);
-                            if (mask && CustomCanCast(mask)) {
-                                mask.CastNoTarget();
-                            }
+                        if (myHero.GetAbilityByIndex(5).CanCast()) {
+                            SendOrderMovePos(comboTarget.GetAbsOrigin());
                         }
-                    }
-                    if (myHero.GetAbilityByIndex(5).CanCast()) {
-                        SendOrderMovePos(comboTarget.GetAbsOrigin());
-                    }
-                    else {
-                        myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, comboTarget, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, myHero, false, true);
+                        else {
+                            myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, comboTarget, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, myHero, false, true);
+                        }
                     }
                 }
             }
             else {
                 comboTarget = null;
-                let armlet = myHero.GetItem('item_armlet', true);
-                if (armlet && menu_ItemsList.IsEnabled('item_armlet') && armlet.GetToggleState()) {
-                    armlet.Toggle();
+                if (GameRules.IsActiveGame()) {
+                    let armlet = myHero.GetItem('item_armlet', true);
+                    if (armlet && menu_ItemsList.IsEnabled('item_armlet') && armlet.GetToggleState()) {
+                        armlet.Toggle();
+                    }
                 }
             }
         }
