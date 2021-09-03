@@ -103,6 +103,7 @@ var Tinker_Spammer;
     const path = ['Custom Scripts', 'Heroes', 'Intelligence', 'Tinker'];
     const item_Images = ['item_enchanted_mango', 'item_arcane_ring', 'item_arcane_boots', 'item_guardian_greaves', 'item_soul_ring'];
     let [myHero, myPlayer] = [null, null];
+    let shivaUsed = 0;
     let gameStarted = false;
     let rocketUsed = false;
     T_spammer.OnScriptLoad = T_spammer.OnGameStart = () => {
@@ -118,69 +119,101 @@ var Tinker_Spammer;
     };
     let menu_ComboKey = Menu.AddKeyBind(path, 'Key', Enum.ButtonCode.KEY_NONE)
         .SetNameLocale('ru', 'Бинд комбо');
+    let menu_CreepKey = Menu.AddKeyBind(path, 'Key Farm Creep', Enum.ButtonCode.KEY_NONE)
+        .SetNameLocale('ru', 'Бинд фарма крипов')
+        .SetTip('Will use shiva 3 times, not 4');
     let menu_ItemsList = lib_1.CreateMultiSelect(path, 'Items', item_Images, true, [{ language: 'ru', translate: 'Предметы' }]);
     Menu.SetImage(['Custom Scripts', 'Heroes'], '~/menu/40x40/heroes.png');
     Menu.SetImage(['Custom Scripts', 'Heroes', 'Intelligence'], '~/menu/40x40/intelligence.png');
     Menu.SetImage(path, 'panorama/images/heroes/icons/npc_dota_hero_tinker_png.vtex_c');
     T_spammer.OnUpdate = () => {
-        if (gameStarted && menu_ComboKey.IsKeyDown() && Engine.OnceAt(0.2)) {
-            for (let nItem of item_Images) {
-                let iItem = myHero.GetItem(nItem, false);
-                if (!iItem || !iItem.IsExist() || !menu_ItemsList.IsEnabled(iItem) || !CustomCanCast(iItem))
-                    continue;
-                if (nItem === 'item_soul_ring') {
-                    if (myHero.GetHealth() - 135 >= 200)
-                        iItem.CastNoTarget();
-                }
-                else
-                    iItem.CastNoTarget();
-            }
-            let blink;
-            for (let i = 0; i < 6; i++) {
-                let q = myHero.GetItemByIndex(+i);
-                if (q && q.IsExist() && q.GetName().endsWith('_blink')) {
-                    blink = q;
-                }
-            }
-            let addRadius = 0;
-            let needItems = myHero.GetItem('item_aether_lens', true) || myHero.GetItem('item_octarine_core', true);
-            if (needItems && needItems.IsExist())
-                addRadius = 225;
+        if (gameStarted && Engine.OnceAt(0.2)) {
             let [rocket, rearm] = [
                 myHero.GetAbilityByIndex(1),
                 myHero.GetAbilityByIndex(5)
             ];
-            if (blink && blink.IsExist() && CustomCanCast(blink)) {
-                let pos = Dist2D(myHero.GetAbsOrigin(), Input.GetWorldCursorPos());
-                if (pos <= 1200 + addRadius)
-                    blink.CastPosition(Input.GetWorldCursorPos());
-                else {
-                    blink.CastPosition(myHero.GetAbsOrigin().add(new Vector(1199, 0, 0).Rotated(lib_1.GetAngleToPos(myHero, Input.GetWorldCursorPos()))));
+            if (menu_ComboKey.IsKeyDown() || menu_CreepKey.IsKeyDown()) {
+                for (let nItem of item_Images) {
+                    let iItem = myHero.GetItem(nItem, false);
+                    if (!iItem || !iItem.IsExist() || !menu_ItemsList.IsEnabled(iItem) || !CustomCanCast(iItem))
+                        continue;
+                    if (nItem === 'item_soul_ring') {
+                        if (myHero.GetHealth() - 135 >= 200)
+                            iItem.CastNoTarget();
+                    }
+                    else
+                        iItem.CastNoTarget();
+                }
+                let blink;
+                for (let i = 0; i < 6; i++) {
+                    let q = myHero.GetItemByIndex(+i);
+                    if (q && q.IsExist() && q.GetName().endsWith('_blink')) {
+                        blink = q;
+                    }
+                }
+                let addRadius = 0;
+                let needItems = myHero.GetItem('item_aether_lens', true) || myHero.GetItem('item_octarine_core', true);
+                if (needItems && needItems.IsExist())
+                    addRadius = 225;
+                if (blink && blink.IsExist() && CustomCanCast(blink)) {
+                    let pos = Dist2D(myHero.GetAbsOrigin(), Input.GetWorldCursorPos());
+                    if (pos <= 1200 + addRadius)
+                        blink.CastPosition(Input.GetWorldCursorPos());
+                    else {
+                        blink.CastPosition(myHero.GetAbsOrigin().add(new Vector(1199, 0, 0).Rotated(lib_1.GetAngleToPos(myHero, Input.GetWorldCursorPos()))));
+                    }
+                }
+                if (rocket && rocket.IsExist() && rocket.CanCast()) {
+                    let enemyInRadius = myHero.GetHeroesInRadius(2500 + addRadius, Enum.TeamType.TEAM_ENEMY).length;
+                    if (enemyInRadius) {
+                        rocket.CastNoTarget();
+                        rocketUsed = true;
+                    }
+                    else
+                        rocketUsed = true;
                 }
             }
-            if (rocket && rocket.IsExist() && rocket.CanCast()) {
-                let enemyInRadius = myHero.GetHeroesInRadius(2500 + addRadius, Enum.TeamType.TEAM_ENEMY).length;
-                if (enemyInRadius) {
-                    rocket.CastNoTarget();
-                    rocketUsed = true;
+            if (menu_ComboKey.IsKeyDown()) {
+                if (rearm && rearm.IsExist() && rearm.CanCast() && !rearm.IsChannelling() && rocketUsed) {
+                    rearm.CastNoTarget();
                 }
-                else
-                    rocketUsed = true;
+                if (rearm.IsChannelling()) {
+                    let shiva = myHero.GetItem('item_shivas_guard', true);
+                    if (shiva && shiva.IsExist() && shiva.CanCast()) {
+                        setTimeout(() => {
+                            if (shiva.CanCast())
+                                shiva.CastNoTarget();
+                        }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') - 300);
+                        setTimeout(() => {
+                            if (shiva.CanCast())
+                                shiva.CastNoTarget();
+                        }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') + 300);
+                    }
+                }
             }
-            if (rearm && rearm.IsExist() && rearm.CanCast() && !rearm.IsChannelling() && rocketUsed) {
-                rearm.CastNoTarget();
-            }
-            if (rearm.IsChannelling()) {
+            if (menu_CreepKey.IsKeyDown()) {
                 let shiva = myHero.GetItem('item_shivas_guard', true);
-                if (shiva && shiva.IsExist() && shiva.CanCast()) {
-                    setTimeout(() => {
-                        if (shiva.CanCast())
-                            shiva.CastNoTarget();
-                    }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') - 200);
-                    setTimeout(() => {
-                        if (shiva.CanCast())
-                            shiva.CastNoTarget();
-                    }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') + 200);
+                if (shiva && shiva.IsExist() && shiva.CanCast() && shivaUsed >= 2) {
+                    if (shiva.CanCast())
+                        shiva.CastNoTarget();
+                    shivaUsed = 0;
+                }
+                if (rearm && rearm.IsExist() && rearm.CanCast() && !rearm.IsChannelling()) {
+                    rearm.CastNoTarget();
+                }
+                if (rearm.IsChannelling()) {
+                    if (shiva && shiva.IsExist() && shiva.CanCast() && shivaUsed < 2) {
+                        setTimeout(() => {
+                            if (shiva.CanCast())
+                                shiva.CastNoTarget();
+                            ++shivaUsed;
+                        }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') - 300);
+                        setTimeout(() => {
+                            if (shiva.CanCast())
+                                shiva.CastNoTarget();
+                            ++shivaUsed;
+                        }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') + 300);
+                    }
                 }
             }
         }
