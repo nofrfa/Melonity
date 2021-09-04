@@ -86,10 +86,10 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/CentaurCombo.ts":
-/*!*****************************!*\
-  !*** ./src/CentaurCombo.ts ***!
-  \*****************************/
+/***/ "./src/Centaur_Combo.ts":
+/*!******************************!*\
+  !*** ./src/Centaur_Combo.ts ***!
+  \******************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -223,13 +223,16 @@ var centaurCombo_Custom;
                 }
             }
             if (menu_ComboKey.IsKeyDown()) {
+                if (comboTarget && !comboTarget.IsAlive())
+                    comboTarget = null;
                 let target = GetNearHeroInRadius(Input.GetWorldCursorPos());
                 if (!menu_TargetLock) {
                     if (target && target.IsExist())
                         comboTarget = target;
                     else {
                         comboTarget = null;
-                        SendOrderMovePos(Input.GetWorldCursorPos());
+                        if (Engine.OnceAt(0.2))
+                            SendOrderMovePos(Input.GetWorldCursorPos());
                     }
                 }
                 else {
@@ -237,11 +240,12 @@ var centaurCombo_Custom;
                         comboTarget = target;
                     else if (!comboTarget) {
                         comboTarget = null;
-                        SendOrderMovePos(Input.GetWorldCursorPos());
+                        if (Engine.OnceAt(0.2))
+                            SendOrderMovePos(Input.GetWorldCursorPos());
                     }
                 }
                 if (Engine.OnceAt(0.2)) {
-                    if (comboTarget.HasModifier('modifier_item_blade_mail_reflect') && menu_InBM) {
+                    if (comboTarget && comboTarget.HasModifier('modifier_item_blade_mail_reflect') && menu_InBM) {
                         SendOrderMovePos(Input.GetWorldCursorPos());
                         return;
                     }
@@ -317,9 +321,11 @@ var centaurCombo_Custom;
                             if (!invItem || !invItem.IsExist() || !menu_ItemsList.IsEnabled(invItem) || !CustomCanCast(invItem))
                                 continue;
                             if (invItem.GetBehavior() & Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_UNIT_TARGET) {
-                                if (invItem.GetTargetTeam() != myHero.GetTeamNum())
-                                    invItem.CastTarget(myHero);
-                                else {
+                                if (item === 'item_ethereal_blade') {
+                                    invItem.CastTarget(comboTarget);
+                                    continue;
+                                }
+                                if (invItem.GetTargetTeam() == myHero.GetTeamNum()) {
                                     if (item === 'item_abyssal_blade') {
                                         if (GameRules.GetGameTime() - stompTime >= myHero.GetAbilityByIndex(0).GetLevelSpecialValueForFloat('stun_duration') + 0.6) {
                                             if (CustomCanCast(invItem))
@@ -358,6 +364,9 @@ var centaurCombo_Custom;
                                     else
                                         invItem.CastTarget(comboTarget);
                                 }
+                                else {
+                                    invItem.CastTarget(myHero);
+                                }
                             }
                             if (invItem.GetBehavior() & Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_NO_TARGET) {
                                 if (item === 'item_ex_machina')
@@ -372,6 +381,8 @@ var centaurCombo_Custom;
                                 continue;
                             }
                             if (invItem.GetBehavior() & Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_POINT) {
+                                if (item === 'item_blink')
+                                    continue;
                                 if (invItem.GetCastRange()) {
                                     CastItemOnBestPos(invItem, comboTarget, myHero, invItem.GetCastRange(), invItem.GetAOERadius());
                                 }
@@ -390,7 +401,7 @@ var centaurCombo_Custom;
                                 }
                             };
                             if (g_blink() && CustomCanCast(g_blink())) {
-                                CastItemOnBestPos(g_blink(), comboTarget, myHero, g_blink().GetAOERadius(), g_blink().GetAOERadius());
+                                CastItemOnBestPos(g_blink(), comboTarget, myHero, centaur_hoof_stomp.GetLevelSpecialValueForFloat('radius') * 2 - 30, g_blink().GetAOERadius());
                             }
                         }
                         if (menu_ItemsList.IsEnabled('item_dagon_5')) {
@@ -451,7 +462,16 @@ var centaurCombo_Custom;
                             SendOrderMovePos(comboTarget.GetAbsOrigin());
                         }
                         else {
-                            myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, comboTarget, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, myHero, false, true);
+                            let [order, target, pos] = [Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, comboTarget, comboTarget.GetAbsOrigin()];
+                            if (comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_ATTACK_IMMUNE) ||
+                                comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) ||
+                                comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) ||
+                                comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_UNTARGETABLE)) {
+                                order = Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION;
+                                target = null;
+                                pos = Input.GetWorldCursorPos();
+                            }
+                            myPlayer.PrepareUnitOrders(order, target, pos, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, myHero, false, true);
                         }
                     }
                 }
@@ -549,6 +569,17 @@ var centaurCombo_Custom;
             || owner.HasState(Enum.ModifierState.MODIFIER_STATE_FEARED)
             || owner.HasState(Enum.ModifierState.MODIFIER_STATE_TAUNTED);
         return item && !hasModf && owner.GetMana() >= item.GetManaCost() && item.IsCastable(owner.GetMana());
+    }
+    function CheckerStates() {
+        if (comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_UNTARGETABLE) ||
+            comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) ||
+            comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_UNSELECTABLE) ||
+            comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_ATTACK_IMMUNE) ||
+            comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE)) {
+            SendOrderMovePos(Input.GetWorldCursorPos());
+            return false;
+        }
+        return true;
     }
     RegisterScript(CentaurWarrunner_Combo);
 })(centaurCombo_Custom || (centaurCombo_Custom = {}));
@@ -744,13 +775,13 @@ exports.CustomCanCast = CustomCanCast;
 /***/ }),
 
 /***/ 0:
-/*!***********************************!*\
-  !*** multi ./src/CentaurCombo.ts ***!
-  \***********************************/
+/*!************************************!*\
+  !*** multi ./src/Centaur_Combo.ts ***!
+  \************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Minority\scripts\src\CentaurCombo.ts */"./src/CentaurCombo.ts");
+module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Minority\scripts\src\Centaur_Combo.ts */"./src/Centaur_Combo.ts");
 
 
 /***/ })
