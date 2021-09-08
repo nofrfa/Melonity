@@ -183,7 +183,7 @@ var mg;
             if (Input.IsCursorInRect(xCen - 217, yCen - 64, 150, 50, ContentAlign.CenterXY) && Input.IsKeyDownOnce(Enum.ButtonCode.MOUSE_LEFT)) {
                 SnakeGame.gameStarted = !SnakeGame.gameStarted;
                 if (SnakeGame.gameStarted) {
-                    SnakeGame.gameTime = 0;
+                    SnakeGame.score = 0;
                 }
             }
             if (SnakeGame.gameStarted) {
