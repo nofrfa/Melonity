@@ -184,6 +184,7 @@ var mg;
                 SnakeGame.gameStarted = !SnakeGame.gameStarted;
                 if (SnakeGame.gameStarted) {
                     SnakeGame.score = 0;
+                    SnakeGame.gameTime = 0;
                 }
             }
             if (SnakeGame.gameStarted) {
