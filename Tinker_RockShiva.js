@@ -100,12 +100,14 @@ const lib_1 = __webpack_require__(/*! ./libs/lib */ "./src/libs/lib.ts");
 let T_spammer = {};
 var Tinker_Spammer;
 (function (Tinker_Spammer) {
-    const path = ['Custom Scripts', 'Heroes', 'Intelligence', 'Tinker'];
+    const path = ['Custom Scripts', 'Heroes', 'Intelligence', 'Tinker'], laser_path = [...path, 'Laser'], laserSettings_path = [...laser_path, 'Custom Targeting'];
     const item_Images = ['item_enchanted_mango', 'item_arcane_ring', 'item_arcane_boots', 'item_guardian_greaves', 'item_soul_ring'];
-    let [myHero, myPlayer] = [null, null];
+    let [myHero, target, myPlayer, particle] = [null, null, null, null];
+    let enemyList = [];
     let shivaUsed = 0;
     let gameStarted = false;
-    let rocketUsed = false;
+    let [laserUsed, rocketUsed] = [false, false];
+    let [searchRadius] = [-1];
     T_spammer.OnScriptLoad = T_spammer.OnGameStart = () => {
         if (GameRules.IsActiveGame()) {
             myHero = EntitySystem.GetLocalHero();
@@ -123,120 +125,250 @@ var Tinker_Spammer;
         .SetNameLocale('ru', 'Бинд фарма крипов')
         .SetTip('Will use shiva 3 times, not 4');
     let menu_ItemsList = lib_1.CreateMultiSelect(path, 'Items', item_Images, true, [{ language: 'ru', translate: 'Предметы' }]);
+    let menu_LaserUse = Menu.AddToggle(laser_path, 'Use?', false)
+        .SetNameLocale('ru', 'Использовать?')
+        .SetTip('Will use the target search radius from custom targeting', 'en')
+        .SetTip('Будет использовать радиус поиска цели из кастомного таргетинга', 'ru')
+        .OnChange((state) => {
+        menu_LaserUse = state.newValue;
+        if (state.newValue) {
+            //menu_TargetingBlink.SetHidden(false);
+            Menu.GetFolder(laserSettings_path).SetHidden(false);
+        }
+        else {
+            //menu_TargetingBlink.SetHidden(true);
+            Menu.GetFolder(laserSettings_path).SetHidden(true);
+        }
+    })
+        .GetValue();
+    let menu_TargetingBlink = Menu.AddToggle(laser_path, 'Use targeting blink', false)
+        .SetNameLocale('ru', 'Использовать блинк из таргетинга')
+        //.SetTip(`Will use the value from 'Distant Blink' (from Targeting)\nIf disabled, blink to the cursor position`, 'en')
+        //.SetTip(`Будет использовать значение из 'Дальний Blink' (из таргетинга)\nЕсли выключено - блинк в позицию курсора`, 'ru')
+        .SetHidden(true)
+        .OnChange((state) => {
+        menu_TargetingBlinkValue = state.newValue;
+    });
+    let menu_TargetingBlinkValue = menu_TargetingBlink.GetValue();
+    let menu_SearchRadius = Menu.AddSlider(laserSettings_path, `Search Radius`, 100, 1500, 800, 50)
+        .SetNameLocale('ru', 'Радиус поиска цели')
+        .OnChange(state => {
+        menu_SearchRadius = state.newValue;
+    })
+        .GetValue();
+    let menu_TargetLock = Menu.AddToggle(laserSettings_path, 'Lock target', true)
+        .SetNameLocale('ru', 'Захватывать цель')
+        .OnChange(state => {
+        menu_TargetLock = state.newValue;
+    })
+        .GetValue();
+    let menu_InBM = Menu.AddToggle(laserSettings_path, 'Dont Cast In BM', false)
+        .SetNameLocale('ru', 'Не кастовать в Обратку')
+        .SetImage(lib_1.GetImagesPath('item_blade_mail'))
+        .OnChange(state => {
+        menu_InBM = state.newValue;
+    })
+        .GetValue();
+    let menu_InLotus = Menu.AddToggle(laserSettings_path, 'Dont Cast In Lotus', false)
+        .SetNameLocale('ru', 'Не кастовать в Лотус')
+        .SetImage(lib_1.GetImagesPath('item_lotus_orb'))
+        .SetTip('Only the laser will not be used', 'en')
+        .SetTip('Не будет использоваться только лазер', 'ru')
+        .OnChange(state => {
+        menu_InLotus = state.newValue;
+    })
+        .GetValue();
+    Menu.GetFolder(laserSettings_path).SetHidden(!menu_LaserUse);
     Menu.SetImage(['Custom Scripts', 'Heroes'], '~/menu/40x40/heroes.png');
     Menu.SetImage(['Custom Scripts', 'Heroes', 'Intelligence'], '~/menu/40x40/intelligence.png');
     Menu.SetImage(path, 'panorama/images/heroes/icons/npc_dota_hero_tinker_png.vtex_c');
+    Menu.SetImage(laser_path, lib_1.GetImagesPath('tinker_laser'));
+    Menu.GetFolder(laser_path).SetNameLocale('ru', 'Лазер');
+    Menu.GetFolder(laserSettings_path).SetNameLocale('ru', 'Кастомный таргетинг');
     T_spammer.OnUpdate = () => {
-        if (gameStarted && Engine.OnceAt(0.2)) {
-            let [rocket, rearm] = [
-                myHero.GetAbilityByIndex(1),
-                myHero.GetAbilityByIndex(5)
-            ];
-            if (menu_ComboKey.IsKeyDown() || menu_CreepKey.IsKeyDown()) {
-                for (let nItem of item_Images) {
-                    let iItem = myHero.GetItem(nItem, false);
-                    if (!iItem || !iItem.IsExist() || !menu_ItemsList.IsEnabled(iItem) || !CustomCanCast(iItem))
-                        continue;
-                    if (nItem === 'item_soul_ring') {
-                        if (myHero.GetHealth() - 135 >= 200)
+        if (gameStarted) {
+            if (enemyList.length < 5) {
+                enemyList = [];
+                let heroes = EntitySystem.GetHeroesList();
+                if (heroes) {
+                    for (let hero of heroes) {
+                        if (hero && !hero.IsIllusion() && !hero.IsMeepoClone() && hero.IsHero() && hero.IsAlive() &&
+                            !hero.IsDormant() && !hero.IsSameTeam(myHero)) {
+                            enemyList.push(hero);
+                        }
+                    }
+                }
+            }
+            if (menu_LaserUse) {
+                if (menu_ComboKey.IsKeyDown() || menu_CreepKey.IsKeyDown()) {
+                    if (target && !target.IsAlive())
+                        target = null;
+                    let tn = GetNearHeroInRadius(Input.GetWorldCursorPos());
+                    if (!menu_TargetLock) {
+                        if (tn && tn.IsExist())
+                            target = tn;
+                        else {
+                            target = null;
+                            if (Engine.OnceAt(0.2))
+                                lib_1.SendOrderMovePos(Input.GetWorldCursorPos(), myHero, myPlayer);
+                        }
+                    }
+                    else {
+                        if (!target && tn && tn.IsExist())
+                            target = tn;
+                        else if (!target) {
+                            target = null;
+                            if (Engine.OnceAt(0.2))
+                                lib_1.SendOrderMovePos(Input.GetWorldCursorPos(), myHero, myPlayer);
+                        }
+                    }
+                }
+                else
+                    target = null;
+            }
+            else
+                target = null;
+            if (Engine.OnceAt(0.2)) {
+                if (target && target.HasModifier('modifier_item_blade_mail_reflect') && menu_InBM) {
+                    lib_1.SendOrderMovePos(Input.GetWorldCursorPos(), myHero, myPlayer);
+                    return;
+                }
+                let [laser, rocket, rearm] = [
+                    myHero.GetAbilityByIndex(0),
+                    myHero.GetAbilityByIndex(1),
+                    myHero.GetAbilityByIndex(5)
+                ];
+                if (menu_ComboKey.IsKeyDown() || menu_CreepKey.IsKeyDown()) {
+                    for (let nItem of item_Images) {
+                        let iItem = myHero.GetItem(nItem, false);
+                        if (!iItem || !iItem.IsExist() || !menu_ItemsList.IsEnabled(iItem) || !lib_1.CustomCanCast(iItem))
+                            continue;
+                        if (nItem === 'item_soul_ring') {
+                            if (myHero.GetHealth() - 135 >= 200)
+                                iItem.CastNoTarget();
+                        }
+                        else
                             iItem.CastNoTarget();
                     }
-                    else
-                        iItem.CastNoTarget();
-                }
-                let blink;
-                for (let i = 0; i < 6; i++) {
-                    let q = myHero.GetItemByIndex(+i);
-                    if (q && q.IsExist() && q.GetName().endsWith('_blink')) {
-                        blink = q;
+                    let blink = myHero.GetItem('item_blink', true) ||
+                        myHero.GetItem('item_overwhelming_blink', true) ||
+                        myHero.GetItem('item_arcane_blink', true) ||
+                        myHero.GetItem('item_swift_blink', true);
+                    let addRadius = 0;
+                    let needItems = myHero.GetItem('item_aether_lens', true) || myHero.GetItem('item_octarine_core', true);
+                    if (needItems && needItems.IsExist())
+                        addRadius = 225;
+                    if (blink && blink.IsExist() && lib_1.CustomCanCast(blink)) {
+                        let pos = lib_1.Dist2D(myHero.GetAbsOrigin(), Input.GetWorldCursorPos());
+                        if (pos <= 1200 + addRadius)
+                            blink.CastPosition(Input.GetWorldCursorPos());
+                        else {
+                            blink.CastPosition(myHero.GetAbsOrigin().add(new Vector(1199, 0, 0).Rotated(lib_1.GetAngleToPos(myHero, Input.GetWorldCursorPos()))));
+                        }
                     }
-                }
-                let addRadius = 0;
-                let needItems = myHero.GetItem('item_aether_lens', true) || myHero.GetItem('item_octarine_core', true);
-                if (needItems && needItems.IsExist())
-                    addRadius = 225;
-                if (blink && blink.IsExist() && CustomCanCast(blink)) {
-                    let pos = Dist2D(myHero.GetAbsOrigin(), Input.GetWorldCursorPos());
-                    if (pos <= 1200 + addRadius)
-                        blink.CastPosition(Input.GetWorldCursorPos());
-                    else {
-                        blink.CastPosition(myHero.GetAbsOrigin().add(new Vector(1199, 0, 0).Rotated(lib_1.GetAngleToPos(myHero, Input.GetWorldCursorPos()))));
+                    if (laser && laser.IsExist() && laser.CanCast() && target) {
+                        if (!target.HasModifier('modifier_item_lotus_orb_active'))
+                            laser.CastTarget(target);
                     }
-                }
-                if (rocket && rocket.IsExist() && rocket.CanCast()) {
-                    let enemyInRadius = myHero.GetHeroesInRadius(2500 + addRadius, Enum.TeamType.TEAM_ENEMY).length;
-                    if (enemyInRadius) {
-                        rocket.CastNoTarget();
+                    if (!laser || !laser.IsExist() || !menu_LaserUse || !target || target.HasModifier('modifier_item_lotus_orb_active'))
+                        laserUsed = true;
+                    if (rocket && rocket.IsExist() && rocket.CanCast()) {
+                        let enemyInRadius = myHero.GetHeroesInRadius(2500 + addRadius, Enum.TeamType.TEAM_ENEMY).length;
+                        if (enemyInRadius) {
+                            rocket.CastNoTarget();
+                        }
+                    }
+                    if (!rocket || !rocket.IsExist() || !rocket.CanCast())
                         rocketUsed = true;
+                }
+                else
+                    target = null;
+                if (menu_ComboKey.IsKeyDown()) {
+                    if (rearm && rearm.IsExist() && rearm.CanCast() && !rearm.IsChannelling() && rocketUsed) {
+                        rearm.CastNoTarget();
                     }
-                    else
-                        rocketUsed = true;
+                    if (rearm.IsChannelling()) {
+                        let shiva = myHero.GetItem('item_shivas_guard', true);
+                        if (shiva && shiva.IsExist() && shiva.CanCast()) {
+                            setTimeout(() => {
+                                if (shiva.CanCast())
+                                    shiva.CastNoTarget();
+                            }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') - 300);
+                            setTimeout(() => {
+                                if (shiva.CanCast())
+                                    shiva.CastNoTarget();
+                            }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') + 300);
+                        }
+                    }
                 }
-            }
-            if (menu_ComboKey.IsKeyDown()) {
-                if (rearm && rearm.IsExist() && rearm.CanCast() && !rearm.IsChannelling() && rocketUsed) {
-                    rearm.CastNoTarget();
-                }
-                if (rearm.IsChannelling()) {
+                if (menu_CreepKey.IsKeyDown()) {
                     let shiva = myHero.GetItem('item_shivas_guard', true);
-                    if (shiva && shiva.IsExist() && shiva.CanCast()) {
-                        setTimeout(() => {
-                            if (shiva.CanCast())
-                                shiva.CastNoTarget();
-                        }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') - 300);
-                        setTimeout(() => {
-                            if (shiva.CanCast())
-                                shiva.CastNoTarget();
-                        }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') + 300);
+                    if (shiva && shiva.IsExist() && shiva.CanCast() && shivaUsed >= 2) {
+                        if (shiva.CanCast())
+                            shiva.CastNoTarget();
+                        shivaUsed = 0;
                     }
-                }
-            }
-            if (menu_CreepKey.IsKeyDown()) {
-                let shiva = myHero.GetItem('item_shivas_guard', true);
-                if (shiva && shiva.IsExist() && shiva.CanCast() && shivaUsed >= 2) {
-                    if (shiva.CanCast())
-                        shiva.CastNoTarget();
-                    shivaUsed = 0;
-                }
-                if (rearm && rearm.IsExist() && rearm.CanCast() && !rearm.IsChannelling()) {
-                    rearm.CastNoTarget();
-                }
-                if (rearm.IsChannelling()) {
-                    if (shiva && shiva.IsExist() && shiva.CanCast() && shivaUsed < 2) {
-                        setTimeout(() => {
-                            if (shiva.CanCast())
-                                shiva.CastNoTarget();
-                            ++shivaUsed;
-                        }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') - 300);
-                        setTimeout(() => {
-                            if (shiva.CanCast())
-                                shiva.CastNoTarget();
-                            ++shivaUsed;
-                        }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') + 300);
+                    if (rearm && rearm.IsExist() && rearm.CanCast() && !rearm.IsChannelling()) {
+                        rearm.CastNoTarget();
+                    }
+                    if (rearm.IsChannelling()) {
+                        if (shiva && shiva.IsExist() && shiva.CanCast() && shivaUsed < 2) {
+                            setTimeout(() => {
+                                if (shiva.CanCast())
+                                    shiva.CastNoTarget();
+                                ++shivaUsed;
+                            }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') - 300);
+                            setTimeout(() => {
+                                if (shiva.CanCast())
+                                    shiva.CastNoTarget();
+                                ++shivaUsed;
+                            }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') + 300);
+                        }
                     }
                 }
             }
         }
     };
-    function CustomCanCast(item) {
-        let owner = item.GetOwner(), hasModf = owner.HasState(Enum.ModifierState.MODIFIER_STATE_MUTED)
-            || owner.HasState(Enum.ModifierState.MODIFIER_STATE_STUNNED)
-            || owner.HasState(Enum.ModifierState.MODIFIER_STATE_HEXED)
-            || owner.HasState(Enum.ModifierState.MODIFIER_STATE_INVULNERABLE)
-            || owner.HasState(Enum.ModifierState.MODIFIER_STATE_FROZEN)
-            || owner.HasState(Enum.ModifierState.MODIFIER_STATE_FEARED)
-            || owner.HasState(Enum.ModifierState.MODIFIER_STATE_TAUNTED);
-        return item && !hasModf && owner.GetMana() >= item.GetManaCost() && item.IsCastable(owner.GetMana());
-    }
-    function Dist2D(vec1, vec2) {
-        if (vec1 && vec2) {
-            let pos1 = (vec1.x ? (vec1) : (vec1.GetAbsOrigin ? (vec1.GetAbsOrigin()) : (0)));
-            let pos2 = (vec2.x ? (vec2) : (vec2.GetAbsOrigin ? (vec2.GetAbsOrigin()) : (0)));
-            return pos1 && pos2 && pos1.sub(pos2).Length2D();
+    T_spammer.OnDraw = () => {
+        if (target) {
+            if (!particle) {
+                particle = Particle.Create('particles/ui_mouseactions/range_finder_tower_aoe.vpcf', Enum.ParticleAttachment.PATTACH_INVALID, target);
+                particle.SetControl(2, EntitySystem.GetLocalHero().GetAbsOrigin());
+                particle.SetControl(6, new Vector(1, 0, 0));
+                particle.SetControl(7, target.GetAbsOrigin());
+            }
+            else {
+                particle.SetControl(2, EntitySystem.GetLocalHero().GetAbsOrigin());
+                particle.SetControl(7, target.GetAbsOrigin());
+            }
         }
-        return -1;
+        else {
+            if (particle) {
+                particle.Destroy();
+                particle = null;
+            }
+        }
+    };
+    T_spammer.OnGameEnd = () => {
+        enemyList.splice(0);
+        myHero = null;
+        target = null;
+    };
+    function GetNearHeroInRadius(vector, radius = menu_SearchRadius) {
+        let en = enemyList;
+        if (en.length == 0)
+            return undefined;
+        let accessHero = Array(enemyList.length);
+        en.forEach((object) => {
+            if (object.GetAbsOrigin().Distance(vector) <= radius) {
+                accessHero.push([object, object.GetAbsOrigin().Distance(vector)]);
+            }
+        });
+        accessHero.sort((a, b) => {
+            return (a[1] - b[1]);
+        });
+        return accessHero[0] ? accessHero[0][0] : undefined;
     }
-    Tinker_Spammer.Dist2D = Dist2D;
     RegisterScript(T_spammer);
 })(Tinker_Spammer || (Tinker_Spammer = {}));
 
@@ -274,6 +406,10 @@ function GetImagesPath(name, full) {
     }
 }
 exports.GetImagesPath = GetImagesPath;
+function GetTipStringImage(imagePath) {
+    return '{{' + imagePath + ':false}}';
+}
+exports.GetTipStringImage = GetTipStringImage;
 function CreateMultiSelect(path, name, iconsArray, default_value = true, translate) {
     let icons = [];
     for (let q of iconsArray) {
@@ -426,6 +562,10 @@ function CustomCanCast(item) {
     return item && !hasModf && owner.GetMana() >= item.GetManaCost() && item.IsCastable(owner.GetMana());
 }
 exports.CustomCanCast = CustomCanCast;
+function SendOrderMovePos(vector, myHero, myPlayer) {
+    myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, null, vector, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, myHero, false, true);
+}
+exports.SendOrderMovePos = SendOrderMovePos;
 
 
 /***/ }),
