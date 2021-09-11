@@ -160,6 +160,9 @@ var customUtil;
             }
         }
     };
+    CustomUtility.OnGameEnd = () => {
+        gameStarted = false;
+    };
     RegisterScript(CustomUtility);
 })(customUtil || (customUtil = {}));
 
