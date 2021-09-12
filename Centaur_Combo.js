@@ -106,8 +106,8 @@ var centaurCombo_Custom;
     let [stompTime, abyssalTime] = [-1, -1, -1];
     let enemyList = [];
     const [path, pathSettings] = [
-        ['Custom Scripts', 'Heroes', 'Strength', 'Centaur Warrunner'],
-        ['Custom Scripts', 'Heroes', 'Strength', 'Centaur Warrunner', 'Settings Combo']
+        ['Custom Scripts', 'Heroes', 'Strength', 'Centaur Warrunner [DEPRECATED]'],
+        ['Custom Scripts', 'Heroes', 'Strength', 'Centaur Warrunner [DEPRECATED]', 'Settings Combo']
     ];
     const item_Images = [
         'item_soul_ring', 'item_armlet', 'item_mjollnir', 'item_blink', 'item_abyssal_blade', 'item_fallen_sky',
@@ -618,6 +618,10 @@ function GetImagesPath(name, full) {
     }
 }
 exports.GetImagesPath = GetImagesPath;
+function GetTipStringImage(imagePath) {
+    return '{{' + imagePath + ':false}}';
+}
+exports.GetTipStringImage = GetTipStringImage;
 function CreateMultiSelect(path, name, iconsArray, default_value = true, translate) {
     let icons = [];
     for (let q of iconsArray) {
@@ -770,6 +774,10 @@ function CustomCanCast(item) {
     return item && !hasModf && owner.GetMana() >= item.GetManaCost() && item.IsCastable(owner.GetMana());
 }
 exports.CustomCanCast = CustomCanCast;
+function SendOrderMovePos(vector, myHero, myPlayer) {
+    myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, null, vector, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, myHero, false, true);
+}
+exports.SendOrderMovePos = SendOrderMovePos;
 
 
 /***/ }),
