@@ -101,7 +101,7 @@ let CustomUtility = {};
 var customUtil;
 (function (customUtil) {
     let myHero, myPlayer, gameStarted;
-    const path = ['Custom Combo', 'Other'];
+    const path = ['Custom Scripts', 'Other'];
     const Poses = [
         new Vector(-2246, 2215, 13),
         new Vector(-2404, 2033, 28),
