@@ -101,7 +101,7 @@ let CustomUtility = {};
 var customUtil;
 (function (customUtil) {
     let myHero, myPlayer, gameStarted;
-    const path = ['Custom Scripts', 'Utility'];
+    const path = ['Custom Combo', 'Other'];
     const Poses = [
         new Vector(-2246, 2215, 13),
         new Vector(-2404, 2033, 28),
@@ -126,6 +126,11 @@ var customUtil;
             gameStarted = false;
             return;
         }
+    };
+    CustomUtility.OnGameEnd = () => {
+        myHero = null;
+        myPlayer = null;
+        gameStarted = false;
     };
     CustomUtility.OnDraw = () => {
         if (gameStarted && menuEnable) {
@@ -159,9 +164,6 @@ var customUtil;
                 }
             }
         }
-    };
-    CustomUtility.OnGameEnd = () => {
-        gameStarted = false;
     };
     RegisterScript(CustomUtility);
 })(customUtil || (customUtil = {}));
@@ -356,6 +358,10 @@ function CustomCanCast(item) {
     return item && !hasModf && owner.GetMana() >= item.GetManaCost() && item.IsCastable(owner.GetMana());
 }
 exports.CustomCanCast = CustomCanCast;
+function SendOrderMovePos(vector, myHero, myPlayer) {
+    myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, null, vector, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, myHero, false, true);
+}
+exports.SendOrderMovePos = SendOrderMovePos;
 
 
 /***/ }),
