@@ -94,6 +94,11 @@
 /***/ (function(module, exports) {
 
 let zz_Core = {};
+Menu.AddButton(['Custom Scripts'], 'Open Telegram URL', () => {
+    Engine.OpenURL('https://t.me/no_frfa');
+})
+    .SetTip('If you are faced with incorrect operation of scripts or you have something to say, write to me in a telegram', 'en')
+    .SetTip('Если вы столкнулись с неправильной работой скриптов или вам есть что сказать, напишите мне в телеграмме', 'ru');
 Menu.SetOrdering(['Custom Scripts', 'Information'], 2);
 Menu.SetOrdering(['Custom Scripts', 'Heroes'], 1);
 Menu.SetOrdering(['Custom Scripts', 'Other'], 0);
