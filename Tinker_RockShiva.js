@@ -103,7 +103,6 @@ var Tinker_Spammer;
     const path = ['Custom Scripts', 'Heroes', 'Intelligence', 'Tinker'];
     const item_Images = ['item_enchanted_mango', 'item_arcane_ring', 'item_arcane_boots', 'item_guardian_greaves', 'item_soul_ring'];
     let [myHero, myPlayer] = [null, null];
-    let enemyList = [];
     let shivaUsed = 0;
     let gameStarted = false;
     let [rocketUsed] = [false, false];
@@ -129,18 +128,6 @@ var Tinker_Spammer;
     Menu.SetImage(path, 'panorama/images/heroes/icons/npc_dota_hero_tinker_png.vtex_c');
     T_spammer.OnUpdate = () => {
         if (gameStarted) {
-            if (enemyList.length < 5) {
-                enemyList = [];
-                let heroes = EntitySystem.GetHeroesList();
-                if (heroes) {
-                    for (let hero of heroes) {
-                        if (hero && !hero.IsIllusion() && !hero.IsMeepoClone() && hero.IsHero() && hero.IsAlive() &&
-                            !hero.IsDormant() && !hero.IsSameTeam(myHero)) {
-                            enemyList.push(hero);
-                        }
-                    }
-                }
-            }
             if (Engine.OnceAt(0.2)) {
                 let [rocket, rearm] = [
                     myHero.GetAbilityByIndex(1),
@@ -234,7 +221,6 @@ var Tinker_Spammer;
         }
     };
     T_spammer.OnGameEnd = () => {
-        enemyList.splice(0);
         myHero = null;
         gameStarted = false;
     };
