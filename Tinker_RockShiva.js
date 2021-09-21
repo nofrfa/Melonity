@@ -86,10 +86,10 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/TinkerCumSpam.ts":
-/*!******************************!*\
-  !*** ./src/TinkerCumSpam.ts ***!
-  \******************************/
+/***/ "./src/Tinker_RockShiva.ts":
+/*!*********************************!*\
+  !*** ./src/Tinker_RockShiva.ts ***!
+  \*********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -100,14 +100,13 @@ const lib_1 = __webpack_require__(/*! ./libs/lib */ "./src/libs/lib.ts");
 let T_spammer = {};
 var Tinker_Spammer;
 (function (Tinker_Spammer) {
-    const path = ['Custom Scripts', 'Heroes', 'Intelligence', 'Tinker'], laser_path = [...path, 'Laser'], laserSettings_path = [...laser_path, 'Custom Targeting'];
+    const path = ['Custom Scripts', 'Heroes', 'Intelligence', 'Tinker'];
     const item_Images = ['item_enchanted_mango', 'item_arcane_ring', 'item_arcane_boots', 'item_guardian_greaves', 'item_soul_ring'];
-    let [myHero, target, myPlayer, particle] = [null, null, null, null];
+    let [myHero, myPlayer] = [null, null];
     let enemyList = [];
     let shivaUsed = 0;
     let gameStarted = false;
-    let [laserUsed, rocketUsed] = [false, false];
-    let [searchRadius] = [-1];
+    let [rocketUsed] = [false, false];
     T_spammer.OnScriptLoad = T_spammer.OnGameStart = () => {
         if (GameRules.IsActiveGame()) {
             myHero = EntitySystem.GetLocalHero();
@@ -125,66 +124,9 @@ var Tinker_Spammer;
         .SetNameLocale('ru', 'Бинд фарма крипов')
         .SetTip('Will use shiva 3 times, not 4');
     let menu_ItemsList = lib_1.CreateMultiSelect(path, 'Items', item_Images, true, [{ language: 'ru', translate: 'Предметы' }]);
-    let menu_LaserUse = Menu.AddToggle(laser_path, 'Use?', false)
-        .SetNameLocale('ru', 'Использовать?')
-        .SetTip('Will use the target search radius from custom targeting', 'en')
-        .SetTip('Будет использовать радиус поиска цели из кастомного таргетинга', 'ru')
-        .OnChange((state) => {
-        menu_LaserUse = state.newValue;
-        if (state.newValue) {
-            //menu_TargetingBlink.SetHidden(false);
-            Menu.GetFolder(laserSettings_path).SetHidden(false);
-        }
-        else {
-            //menu_TargetingBlink.SetHidden(true);
-            Menu.GetFolder(laserSettings_path).SetHidden(true);
-        }
-    })
-        .GetValue();
-    let menu_TargetingBlink = Menu.AddToggle(laser_path, 'Use targeting blink', false)
-        .SetNameLocale('ru', 'Использовать блинк из таргетинга')
-        //.SetTip(`Will use the value from 'Distant Blink' (from Targeting)\nIf disabled, blink to the cursor position`, 'en')
-        //.SetTip(`Будет использовать значение из 'Дальний Blink' (из таргетинга)\nЕсли выключено - блинк в позицию курсора`, 'ru')
-        .SetHidden(true)
-        .OnChange((state) => {
-        menu_TargetingBlinkValue = state.newValue;
-    });
-    let menu_TargetingBlinkValue = menu_TargetingBlink.GetValue();
-    let menu_SearchRadius = Menu.AddSlider(laserSettings_path, `Search Radius`, 100, 1500, 800, 50)
-        .SetNameLocale('ru', 'Радиус поиска цели')
-        .OnChange(state => {
-        menu_SearchRadius = state.newValue;
-    })
-        .GetValue();
-    let menu_TargetLock = Menu.AddToggle(laserSettings_path, 'Lock target', true)
-        .SetNameLocale('ru', 'Захватывать цель')
-        .OnChange(state => {
-        menu_TargetLock = state.newValue;
-    })
-        .GetValue();
-    let menu_InBM = Menu.AddToggle(laserSettings_path, 'Dont Cast In BM', false)
-        .SetNameLocale('ru', 'Не кастовать в Обратку')
-        .SetImage(lib_1.GetImagesPath('item_blade_mail'))
-        .OnChange(state => {
-        menu_InBM = state.newValue;
-    })
-        .GetValue();
-    let menu_InLotus = Menu.AddToggle(laserSettings_path, 'Dont Cast In Lotus', false)
-        .SetNameLocale('ru', 'Не кастовать в Лотус')
-        .SetImage(lib_1.GetImagesPath('item_lotus_orb'))
-        .SetTip('Only the laser will not be used', 'en')
-        .SetTip('Не будет использоваться только лазер', 'ru')
-        .OnChange(state => {
-        menu_InLotus = state.newValue;
-    })
-        .GetValue();
-    Menu.GetFolder(laserSettings_path).SetHidden(!menu_LaserUse);
     Menu.SetImage(['Custom Scripts', 'Heroes'], '~/menu/40x40/heroes.png');
     Menu.SetImage(['Custom Scripts', 'Heroes', 'Intelligence'], '~/menu/40x40/intelligence.png');
     Menu.SetImage(path, 'panorama/images/heroes/icons/npc_dota_hero_tinker_png.vtex_c');
-    Menu.SetImage(laser_path, lib_1.GetImagesPath('tinker_laser'));
-    Menu.GetFolder(laser_path).SetNameLocale('ru', 'Лазер');
-    Menu.GetFolder(laserSettings_path).SetNameLocale('ru', 'Кастомный таргетинг');
     T_spammer.OnUpdate = () => {
         if (gameStarted) {
             if (enemyList.length < 5) {
@@ -199,42 +141,8 @@ var Tinker_Spammer;
                     }
                 }
             }
-            if (menu_LaserUse) {
-                if (menu_ComboKey.IsKeyDown() || menu_CreepKey.IsKeyDown()) {
-                    if (target && !target.IsAlive())
-                        target = null;
-                    let tn = GetNearHeroInRadius(Input.GetWorldCursorPos());
-                    if (!menu_TargetLock) {
-                        if (tn && tn.IsExist())
-                            target = tn;
-                        else {
-                            target = null;
-                            if (Engine.OnceAt(0.2))
-                                lib_1.SendOrderMovePos(Input.GetWorldCursorPos(), myHero, myPlayer);
-                        }
-                    }
-                    else {
-                        if (!target && tn && tn.IsExist())
-                            target = tn;
-                        else if (!target) {
-                            target = null;
-                            if (Engine.OnceAt(0.2))
-                                lib_1.SendOrderMovePos(Input.GetWorldCursorPos(), myHero, myPlayer);
-                        }
-                    }
-                }
-                else
-                    target = null;
-            }
-            else
-                target = null;
             if (Engine.OnceAt(0.2)) {
-                if (target && target.HasModifier('modifier_item_blade_mail_reflect') && menu_InBM) {
-                    lib_1.SendOrderMovePos(Input.GetWorldCursorPos(), myHero, myPlayer);
-                    return;
-                }
-                let [laser, rocket, rearm] = [
-                    myHero.GetAbilityByIndex(0),
+                let [rocket, rearm] = [
                     myHero.GetAbilityByIndex(1),
                     myHero.GetAbilityByIndex(5)
                 ];
@@ -266,12 +174,6 @@ var Tinker_Spammer;
                             blink.CastPosition(myHero.GetAbsOrigin().add(new Vector(1199, 0, 0).Rotated(lib_1.GetAngleToPos(myHero, Input.GetWorldCursorPos()))));
                         }
                     }
-                    if (laser && laser.IsExist() && laser.CanCast() && target) {
-                        if (!target.HasModifier('modifier_item_lotus_orb_active'))
-                            laser.CastTarget(target);
-                    }
-                    if (!laser || !laser.IsExist() || !menu_LaserUse || !target || target.HasModifier('modifier_item_lotus_orb_active'))
-                        laserUsed = true;
                     if (rocket && rocket.IsExist() && rocket.CanCast()) {
                         let enemyInRadius = myHero.GetHeroesInRadius(2500 + addRadius, Enum.TeamType.TEAM_ENEMY).length;
                         if (enemyInRadius) {
@@ -281,8 +183,6 @@ var Tinker_Spammer;
                     if (!rocket || !rocket.IsExist() || !rocket.CanCast())
                         rocketUsed = true;
                 }
-                else
-                    target = null;
                 if (menu_ComboKey.IsKeyDown()) {
                     if (rearm && rearm.IsExist() && rearm.CanCast() && !rearm.IsChannelling() && rocketUsed) {
                         rearm.CastNoTarget();
@@ -312,63 +212,32 @@ var Tinker_Spammer;
                         rearm.CastNoTarget();
                     }
                     if (rearm.IsChannelling()) {
-                        if (shiva && shiva.IsExist() && shiva.CanCast() && shivaUsed < 2) {
-                            setTimeout(() => {
-                                if (shiva.CanCast())
-                                    shiva.CastNoTarget();
-                                ++shivaUsed;
-                            }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') - 300);
-                            setTimeout(() => {
-                                if (shiva.CanCast())
-                                    shiva.CastNoTarget();
-                                ++shivaUsed;
-                            }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') + 300);
+                        if (shiva && shiva.IsExist() && shiva.CanCast()) {
+                            if (shivaUsed < 2) {
+                                setTimeout(() => {
+                                    if (shiva.CanCast())
+                                        shiva.CastNoTarget();
+                                    ++shivaUsed;
+                                }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') - 300);
+                            }
+                            if (shivaUsed < 2) {
+                                setTimeout(() => {
+                                    if (shiva.CanCast())
+                                        shiva.CastNoTarget();
+                                    ++shivaUsed;
+                                }, 1000 * myHero.GetAbilityByIndex(5).GetLevelSpecialValueForFloat('AbilityChannelTime') + 300);
+                            }
                         }
                     }
                 }
             }
         }
     };
-    T_spammer.OnDraw = () => {
-        if (target) {
-            if (!particle) {
-                particle = Particle.Create('particles/ui_mouseactions/range_finder_tower_aoe.vpcf', Enum.ParticleAttachment.PATTACH_INVALID, target);
-                particle.SetControl(2, EntitySystem.GetLocalHero().GetAbsOrigin());
-                particle.SetControl(6, new Vector(1, 0, 0));
-                particle.SetControl(7, target.GetAbsOrigin());
-            }
-            else {
-                particle.SetControl(2, EntitySystem.GetLocalHero().GetAbsOrigin());
-                particle.SetControl(7, target.GetAbsOrigin());
-            }
-        }
-        else {
-            if (particle) {
-                particle.Destroy();
-                particle = null;
-            }
-        }
-    };
     T_spammer.OnGameEnd = () => {
         enemyList.splice(0);
         myHero = null;
-        target = null;
+        gameStarted = false;
     };
-    function GetNearHeroInRadius(vector, radius = menu_SearchRadius) {
-        let en = enemyList;
-        if (en.length == 0)
-            return undefined;
-        let accessHero = Array(enemyList.length);
-        en.forEach((object) => {
-            if (object.GetAbsOrigin().Distance(vector) <= radius) {
-                accessHero.push([object, object.GetAbsOrigin().Distance(vector)]);
-            }
-        });
-        accessHero.sort((a, b) => {
-            return (a[1] - b[1]);
-        });
-        return accessHero[0] ? accessHero[0][0] : undefined;
-    }
     RegisterScript(T_spammer);
 })(Tinker_Spammer || (Tinker_Spammer = {}));
 
@@ -571,13 +440,13 @@ exports.SendOrderMovePos = SendOrderMovePos;
 /***/ }),
 
 /***/ 0:
-/*!************************************!*\
-  !*** multi ./src/TinkerCumSpam.ts ***!
-  \************************************/
+/*!***************************************!*\
+  !*** multi ./src/Tinker_RockShiva.ts ***!
+  \***************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Minority\scripts\src\TinkerCumSpam.ts */"./src/TinkerCumSpam.ts");
+module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Minority\scripts\src\Tinker_RockShiva.ts */"./src/Tinker_RockShiva.ts");
 
 
 /***/ })
