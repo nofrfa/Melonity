@@ -100,16 +100,19 @@ var AUrsa;
     const font = Renderer.LoadFont('monospace', 18, Enum.FontWeight.LIGHT, Enum.FontFlags.OUTLINE);
     let gameStarted = false;
     let bindPressed = false;
+    let [kCasted, k2Casted, k3Casted] = [false, false, false];
     let [myHero, myPlayer] = [null, null];
-    let [enemies, enemiesToggle] = [['panorama/images/heroes/icons/npc_dota_hero_dazzle_png.vtex_c'], []];
+    let [enemies, enemiesToggle] = [['panorama/images/heroes/icons/npc_dota_hero_dazzle_png.vtex_c', 'panorama/images/heroes/icons/npc_dota_hero_arc_warden_png.vtex_c'], []];
     let enableMenu = Menu.AddToggle(path, 'Enable', false)
         .SetNameLocale('ru', 'Включить')
         .OnChange((state) => {
         enableMenu = state.newValue;
     })
         .GetValue();
-    let bindKey = Menu.AddKeyBind(path, 'Bind', Enum.ButtonCode.BUTTON_CODE_NONE).SetNameLocale('ru', 'Бинд');
-    let targetKey = Menu.AddKeyBind(path, 'Move/Rotate to Target', Enum.ButtonCode.BUTTON_CODE_NONE).SetNameLocale('ru', 'Идти/Повернутся к цели');
+    let bindKey = Menu.AddKeyBind(path, 'Bind', Enum.ButtonCode.BUTTON_CODE_NONE)
+        .SetNameLocale('ru', 'Бинд');
+    let targetKey = Menu.AddKeyBind(path, 'Move/Rotate to Target', Enum.ButtonCode.BUTTON_CODE_NONE)
+        .SetNameLocale('ru', 'Идти/Повернутся к цели');
     //let targetSelect = Menu.AddMultiSelect(path, 'Target', enemies, enemiesToggle);
     let sliderMenu = Menu.AddSlider(path, 'Search Radius', 450, 2000, 600, 25)
         .SetNameLocale('ru', 'Радиус поиска')
@@ -192,8 +195,9 @@ var AUrsa;
                                 let [koil, koil2, koil3] = [myHero.GetAbilityByIndex(0), myHero.GetAbilityByIndex(1), myHero.GetAbilityByIndex(2)];
                                 if (koil.CanCast()) {
                                     setTimeout(() => {
-                                        if (koil.CanCast())
+                                        if (koil.CanCast()) {
                                             koil.CastNoTarget();
+                                        }
                                     }, 1);
                                 }
                                 else if (koil2.CanCast()) {
@@ -219,6 +223,12 @@ var AUrsa;
                                 }
                             }
                             else {
+                                myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_STOP, null, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_HERO_ONLY, myHero, false, true);
+                            }
+                        }
+                        else {
+                            let [koil, koil2, koil3] = [myHero.GetAbilityByIndex(0), myHero.GetAbilityByIndex(1), myHero.GetAbilityByIndex(2)];
+                            if (koil.IsInAbilityPhase() || koil2.IsInAbilityPhase() || koil3.IsInAbilityPhase()) {
                                 myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_STOP, null, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_HERO_ONLY, myHero, false, true);
                             }
                         }
