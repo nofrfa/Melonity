@@ -105,7 +105,7 @@ var Tinker_Spammer;
     let [myHero, myPlayer] = [null, null];
     let shivaUsed = 0;
     let gameStarted = false;
-    let [rocketUsed] = [false, false];
+    let [rocketUsed] = [false];
     T_spammer.OnScriptLoad = T_spammer.OnGameStart = () => {
         if (GameRules.IsActiveGame()) {
             myHero = EntitySystem.GetLocalHero();
@@ -117,17 +117,29 @@ var Tinker_Spammer;
             return;
         }
     };
+    let enableMenu = Menu.AddToggle(path, 'Enable', false)
+        .SetNameLocale('ru', 'Включить')
+        .OnChange((state) => {
+        enableMenu = state.newValue;
+    })
+        .GetValue();
     let menu_ComboKey = Menu.AddKeyBind(path, 'Key', Enum.ButtonCode.KEY_NONE)
         .SetNameLocale('ru', 'Бинд комбо');
     let menu_CreepKey = Menu.AddKeyBind(path, 'Key Farm Creep', Enum.ButtonCode.KEY_NONE)
         .SetNameLocale('ru', 'Бинд фарма крипов')
         .SetTip('Will use shiva 3 times, not 4');
+    let rocketFarm = Menu.AddToggle(path, 'Use Rockets with `Key Farm Creep`', false)
+        .SetNameLocale('ru', 'Использовать ракеты с `Бинд фарма крипов`')
+        .OnChange((state) => {
+        rocketFarm = state.newValue;
+    })
+        .GetValue();
     let menu_ItemsList = lib_1.CreateMultiSelect(path, 'Items', item_Images, true, [{ language: 'ru', translate: 'Предметы' }]);
     Menu.SetImage(['Custom Scripts', 'Heroes'], '~/menu/40x40/heroes.png');
     Menu.SetImage(['Custom Scripts', 'Heroes', 'Intelligence'], '~/menu/40x40/intelligence.png');
     Menu.SetImage(path, 'panorama/images/heroes/icons/npc_dota_hero_tinker_png.vtex_c');
     T_spammer.OnUpdate = () => {
-        if (gameStarted) {
+        if (gameStarted && enableMenu) {
             if (Engine.OnceAt(0.2)) {
                 let [rocket, rearm] = [
                     myHero.GetAbilityByIndex(1),
@@ -152,23 +164,40 @@ var Tinker_Spammer;
                     let addRadius = 0;
                     let needItems = myHero.GetItem('item_aether_lens', true) || myHero.GetItem('item_octarine_core', true);
                     if (needItems && needItems.IsExist())
-                        addRadius = 225;
+                        addRadius = needItems.GetLevelSpecialValueFor('cast_range_bonus');
+                    let keen = myHero.GetItem('item_keen_optic', false);
+                    if (keen && keen.IsExist())
+                        addRadius += keen.GetLevelSpecialValueFor('cast_range_bonus');
+                    let seer = myHero.GetItem('item_seer_stone', false);
+                    if (seer && seer.IsExist()) {
+                        addRadius += seer.GetLevelSpecialValueFor('cast_range_bonus');
+                    }
                     if (blink && blink.IsExist() && lib_1.CustomCanCast(blink)) {
                         let pos = lib_1.Dist2D(myHero.GetAbsOrigin(), Input.GetWorldCursorPos());
                         if (pos <= 1200 + addRadius)
                             blink.CastPosition(Input.GetWorldCursorPos());
                         else {
-                            blink.CastPosition(myHero.GetAbsOrigin().add(new Vector(1199, 0, 0).Rotated(lib_1.GetAngleToPos(myHero, Input.GetWorldCursorPos()))));
+                            let mh = Renderer.WorldToScreen(myHero.GetAbsOrigin());
+                            if (mh[2])
+                                blink.CastPosition(myHero.GetAbsOrigin().add(new Vector(1200 + addRadius - 1, 0, 0).Rotated(lib_1.GetAngleToPos(myHero, Input.GetWorldCursorPos()))));
+                            else
+                                blink.CastPosition(Input.GetWorldCursorPos());
                         }
                     }
-                    if (rocket && rocket.IsExist() && rocket.CanCast()) {
-                        let enemyInRadius = myHero.GetHeroesInRadius(2500 + addRadius, Enum.TeamType.TEAM_ENEMY).length;
-                        if (enemyInRadius) {
-                            rocket.CastNoTarget();
+                    let enemyInRadius = myHero.GetHeroesInRadius(2500 + addRadius, Enum.TeamType.TEAM_ENEMY).length;
+                    if ((menu_ComboKey.IsKeyDown() || (menu_CreepKey.IsKeyDown() && rocketFarm))) {
+                        if ((rocket && rocket.IsExist() && rocket.CanCast())) {
+                            if (enemyInRadius) {
+                                rocket.CastNoTarget();
+                            }
                         }
                     }
-                    if (!rocket || !rocket.IsExist() || !rocket.CanCast())
+                    if (!rocket || !rocket.IsExist() || !rocket.CanCast() || enemyInRadius == 0 || !rocketFarm) {
                         rocketUsed = true;
+                    }
+                    if (rocket.CanCast() && enemyInRadius > 0) {
+                        rocketUsed = false;
+                    }
                 }
                 if (menu_ComboKey.IsKeyDown()) {
                     if (rearm && rearm.IsExist() && rearm.CanCast() && !rearm.IsChannelling() && rocketUsed) {
