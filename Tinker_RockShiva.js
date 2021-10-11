@@ -164,7 +164,7 @@ var Tinker_Spammer;
                     let addRadius = 0;
                     let needItems = myHero.GetItem('item_aether_lens', true) || myHero.GetItem('item_octarine_core', true);
                     if (needItems && needItems.IsExist())
-                        addRadius = needItems.GetLevelSpecialValueFor('cast_range_bonus');
+                        addRadius += needItems.GetLevelSpecialValueFor('cast_range_bonus');
                     let keen = myHero.GetItem('item_keen_optic', false);
                     if (keen && keen.IsExist())
                         addRadius += keen.GetLevelSpecialValueFor('cast_range_bonus');
@@ -446,10 +446,15 @@ function CustomCanCast(item) {
     return item && !hasModf && owner.GetMana() >= item.GetManaCost() && item.IsCastable(owner.GetMana());
 }
 exports.CustomCanCast = CustomCanCast;
-function SendOrderMovePos(vector, myHero, myPlayer) {
-    myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, null, vector, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, myHero, false, true);
+function SendOrderMovePos(vector, myHero, myPlayer, orderIssuer = Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY) {
+    myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, null, vector, null, orderIssuer, myHero, false, true);
 }
 exports.SendOrderMovePos = SendOrderMovePos;
+function GetGoodNumber(number, convertToString = false) {
+    let ret = Number(number.toString().split('.', 1)[0]);
+    return convertToString ? ret.toString() : ret;
+}
+exports.GetGoodNumber = GetGoodNumber;
 
 
 /***/ }),
