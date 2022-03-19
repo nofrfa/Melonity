@@ -153,23 +153,26 @@ var customUtil;
         cour = null;
     };
     CustomUtility.OnDraw = () => {
-        if (gameStarted && roshENABLE && !Engine.IsShopOpen()) {
-            //rosh
-            for (let pos of Poses) {
-                let [x, y, OnScreen] = Renderer.WorldToScreen(pos);
-                if (!OnScreen)
-                    continue;
-                Renderer.SetDrawColor(0, 0, 0, 150);
-                Renderer.DrawFilledRect(x, y, 32, 32, 0, Enum.ContentAlign.CenterXY);
-                Renderer.SetDrawColor(255, 255, 255, 255);
-                Renderer.DrawImage(image, x, y, 24, 24, 0, Enum.ContentAlign.CenterXY);
-                if (Input.IsCursorInRect(x, y, 32, 32, Enum.ContentAlign.CenterXY)) {
-                    Renderer.SetDrawColor(0, 255, 0, 150);
-                    Renderer.DrawOutlineRect(x, y, 32, 32, 0, Enum.ContentAlign.CenterXY);
-                }
-                else {
-                    Renderer.SetDrawColor(255, 255, 255, 150);
-                    Renderer.DrawOutlineRect(x, y, 32, 32, 0, Enum.ContentAlign.CenterXY);
+        if (gameStarted) {
+            if (roshENABLE && !Engine.IsShopOpen()) {
+                for (let pos of Poses) {
+                    let [x, y, OnScreen] = Renderer.WorldToScreen(pos);
+                    if (!OnScreen)
+                        continue;
+                    Renderer.PushDrawCentered();
+                    Renderer.SetDrawColor(0, 0, 0, 122);
+                    Renderer.DrawFilledRect(x, y, 32, 32, 30);
+                    Renderer.SetDrawColor(255, 255, 255, 122);
+                    Renderer.DrawImage(image, x, y - 1, 24, 24);
+                    if (Input.IsCursorInRect(x, y, 32, 32, Enum.ContentAlign.CenterXY)) {
+                        Renderer.SetDrawColor(0, 255, 0, 122);
+                        Renderer.DrawOutlineRect(x, y, 32, 32, 30);
+                    }
+                    else {
+                        Renderer.SetDrawColor(255, 255, 255, 122);
+                        Renderer.DrawOutlineRect(x, y, 32, 32, 30);
+                    }
+                    Renderer.PopDrawOptions();
                 }
             }
         }
@@ -182,13 +185,17 @@ var customUtil;
         }
         return -1;
     }
+    function IsControllable(self, target) {
+        return self.GetProperty("C_DOTA_BaseNPC", "m_iIsControllableByPlayer64") ==
+            target.GetProperty("C_DOTA_BaseNPC", "m_iIsControllableByPlayer64");
+    }
     function FindCour() {
         if (!myHero)
             return;
         let couriers_list = EntitySystem.GetCouriersList();
-        for (let couri of couriers_list) {
-            if (couri.GetProperty('C_DOTA_Unit_Courier', 'm_nSoleControllingPlayer') == myPlayer.GetPlayerID()) {
-                cour = couri;
+        for (let entCour of couriers_list) {
+            if (IsControllable(myHero, entCour)) {
+                cour = entCour;
                 break;
             }
         }
@@ -196,7 +203,6 @@ var customUtil;
     CustomUtility.OnUpdate = () => {
         if (gameStarted) {
             if (roshENABLE && !Engine.IsShopOpen()) {
-                //rosh
                 for (let pos of Poses) {
                     let [x, y, OnScreen] = Renderer.WorldToScreen(pos);
                     if (!OnScreen)
