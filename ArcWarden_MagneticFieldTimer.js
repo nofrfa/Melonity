@@ -99,12 +99,6 @@ var magneticFieldTimer;
     magneticFieldTimer.needHero = 'npc_dota_hero_arc_warden';
     magneticFieldTimer.gameStart = false;
     magneticFieldTimer.menuWork = false;
-    magneticFieldTimer.magneticCreate = false;
-    magneticFieldTimer.magneticCreateClone = false;
-    magneticFieldTimer.particleIndex = -1;
-    magneticFieldTimer.particleIndexClone = -1;
-    magneticFieldTimer.durationSkill = -1;
-    magneticFieldTimer.durationSkillClone = -1;
     magneticFieldTimer.magneticsList = [[-1, -1, null], [-1, -1, null], [-1, -1, null], [-1, -1, null]];
     magneticFieldTimer.font = Renderer.LoadFont('Arial', Config.ReadInt('MagneticTimer', 'textSize', 16), Enum.FontWeight.LIGHT, Enum.FontFlags.OUTLINE);
     let menuWork_Lable = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Agility', 'Arc Warden'], 'Display Timer', false).SetNameLocale("ru", "Отображать таймер");
@@ -142,16 +136,17 @@ var magneticFieldTimer;
 arcWarden_magneticField.OnUpdate = () => {
     if (!magneticFieldTimer.gameStart || !magneticFieldTimer.menuWork)
         return;
-    //console.log(magneticFieldTimer.magneticsList)
     Renderer.SetDrawColor(255, 255, 255, 255);
     for (let arrayObj of magneticFieldTimer.magneticsList) {
         if (arrayObj[0] && arrayObj[1] && arrayObj[2]) {
+            Renderer.PushDrawCentered();
             Renderer.DrawWorldText(magneticFieldTimer.font, arrayObj[2], `${(arrayObj[1] - GameRules.GetGameTime()).toFixed(1)}сек`, 0, Enum.ContentAlign.CenterXY);
+            Renderer.PopDrawOptions();
         }
     }
 };
 arcWarden_magneticField.OnParticleCreate = (particle) => {
-    if (particle.name === 'arc_warden_magnetic') {
+    if (magneticFieldTimer.gameStart && particle.name === 'arc_warden_magnetic') {
         for (let arrayVar of magneticFieldTimer.magneticsList) {
             if (arrayVar[0] < 0) {
                 arrayVar[0] = particle.index;
@@ -164,7 +159,6 @@ arcWarden_magneticField.OnParticleCreate = (particle) => {
 arcWarden_magneticField.OnParticleUpdate = (particle) => {
     if (particle.controlPoint != 0)
         return;
-    let vector;
     for (let arrayVar of magneticFieldTimer.magneticsList) {
         if (arrayVar[0] == particle.index) {
             arrayVar[2] = particle.position;
@@ -198,7 +192,7 @@ RegisterScript(arcWarden_magneticField);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Minority\scripts\src\ArcWarden_MagneticFieldTimer.ts */"./src/ArcWarden_MagneticFieldTimer.ts");
+module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Melonity\scripts\src\ArcWarden_MagneticFieldTimer.ts */"./src/ArcWarden_MagneticFieldTimer.ts");
 
 
 /***/ })
