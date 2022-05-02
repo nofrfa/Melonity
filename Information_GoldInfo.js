@@ -91,12 +91,13 @@
   !*** ./src/Information_GoldInfo.ts ***!
   \*************************************/
 /*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
 let GoldInfoScript = {};
+Menu.AddLabel(['Custom Scripts', 'Information', 'Gold Info'], 'Outdated')
+    .SetNameLocale('ru', 'Устаревшее')
+    .SetTip('Данный скрипт является устаревшим\nРаботоспособность не гарантируется', 'ru')
+    .SetTip('This script is outdated\nPerformance is not guaranteed', 'en');
 var mainGoldInfo;
 (function (mainGoldInfo) {
     mainGoldInfo.gameStart = false;
@@ -423,12 +424,12 @@ GoldInfoScript.OnUpdate = () => {
             Renderer.DrawOutlineRect(mainGoldInfo.posX, mainGoldInfo.posY, 90, 34 * heroesSize, 0, Enum.ContentAlign.CenterXBottom);
             Renderer.DrawOutlineRect(mainGoldInfo.posX, mainGoldInfo.posY + 1, 90, 20, 0, Enum.ContentAlign.CenterXTop);
             Renderer.SetDrawColor(255, 255, 255, mainGoldInfo.menuPanelSettings_aplha);
-            Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX, mainGoldInfo.posY - 1, `Gold Panel`, 0, Enum.ContentAlign.CenterXTop);
+            Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX, mainGoldInfo.posY - 1, `Gold Panel`);
             let Locale = Menu.GetLocale();
             if (!mainGoldInfo.menuCalculate) {
                 let text = Locale === 'ru' ? 'Расчёт золота выключен' : 'Gold calculation is disabled';
                 Renderer.SetDrawColor(255, 20, 20, mainGoldInfo.menuPanelSettings_aplha);
-                Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX, mainGoldInfo.posY, text, 0, Enum.ContentAlign.CenterXBottom);
+                Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX, mainGoldInfo.posY, text);
             }
             else {
                 for (let index = 0; index < mainGoldInfo.enemyList.length; index++) {
@@ -436,7 +437,7 @@ GoldInfoScript.OnUpdate = () => {
                         continue;
                     Renderer.SetDrawColor(255, 255, 255, 255);
                     Renderer.DrawImage(mainGoldInfo.enemyList[index][6], mainGoldInfo.posX - 20, mainGoldInfo.posY + 17 + (34 * index), 24, 23, 0, Enum.ContentAlign.CenterXY);
-                    Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX - 5, mainGoldInfo.posY + 16 + (34 * index), `${mainGoldInfo.enemyList[index][1]}`, 0, Enum.ContentAlign.LeftCenterY);
+                    Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX - 5, mainGoldInfo.posY + 16 + (34 * index), `${mainGoldInfo.enemyList[index][1]}`);
                     Renderer.SetDrawColor(255, 215, 0, mainGoldInfo.menuPanelSettings_aplha);
                     Renderer.DrawOutlineRect(mainGoldInfo.posX, mainGoldInfo.posY + 3 + (34 * index), 82, 28, 0, Enum.ContentAlign.CenterXBottom);
                     if (mainGoldInfo.menuStatusBB) {
@@ -455,7 +456,7 @@ GoldInfoScript.OnUpdate = () => {
                         Renderer.SetDrawColor(244, 245, 246, mainGoldInfo.menuPanelSettings_aplha);
                         Renderer.DrawOutlineRect(mainGoldInfo.posX + 44, mainGoldInfo.posY + 17 + (34 * index), Renderer.GetTextSize(mainGoldInfo.mainFont, text)[0] + 10, 28, 0, Enum.ContentAlign.LeftCenterY);
                         Renderer.SetDrawColor(255, 255, 255, 255);
-                        Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX + 48, mainGoldInfo.posY + 16 + (34 * index), text, 0, Enum.ContentAlign.LeftCenterY);
+                        Renderer.DrawText(mainGoldInfo.mainFont, mainGoldInfo.posX + 48, mainGoldInfo.posY + 16 + (34 * index), text);
                     }
                 }
             }
@@ -761,7 +762,7 @@ RegisterScript(GoldInfoScript);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Minority\scripts\src\Information_GoldInfo.ts */"./src/Information_GoldInfo.ts");
+module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Melonity\scripts\src\Information_GoldInfo.ts */"./src/Information_GoldInfo.ts");
 
 
 /***/ })
