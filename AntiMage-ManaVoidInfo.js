@@ -93,8 +93,12 @@
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-var ContentAlign = Enum.ContentAlign;
 let AntiMageUltInfo = {};
+Menu.AddLabel(['Custom Scripts', 'Heroes', 'Agility', 'Anti-Mage', 'ManaVoid Info'], 'Outdated')
+    .SetNameLocale("ru", "Устаревшее")
+    .SetTip('Данный скрипт является устаревшим\nРаботоспособность не гарантируется', 'ru')
+    .SetTip('This script is outdated\nPerformance is not guaranteed', 'en');
+RegisterScript(AntiMageUltInfo);
 var antiMageManaVoid;
 (function (antiMageManaVoid) {
     const needHero = 'npc_dota_hero_antimage';
@@ -230,25 +234,25 @@ AntiMageUltInfo.OnDraw = () => {
                             if (arrayObj[3] > 0) {
                                 if (antiMageManaVoid.menu_TextManaVoidIcon_State) {
                                     Renderer.SetDrawColor(255, 255, 255, 255);
-                                    Renderer.DrawImage(antiMageManaVoid.iconManaVoid, x - 90 + antiMageManaVoid.menu_PosText_X_State, y + antiMageManaVoid.menu_PosText_Y_State, 24, 24, 0, ContentAlign.CenterXY);
+                                    Renderer.DrawImage(antiMageManaVoid.iconManaVoid, x - 90 + antiMageManaVoid.menu_PosText_X_State, y + antiMageManaVoid.menu_PosText_Y_State, 24, 24);
                                 }
                                 Renderer.SetDrawColor(antiMageManaVoid.menu_ColorPickerDamage_State[0], antiMageManaVoid.menu_ColorPickerDamage_State[1], antiMageManaVoid.menu_ColorPickerDamage_State[2], antiMageManaVoid.menu_ColorPickerDamage_State[3]);
-                                Renderer.DrawText(antiMageManaVoid.font, x - 90 + antiMageManaVoid.menu_PosText_X_State, y + antiMageManaVoid.menu_PosText_Y_State, arrayObj[3].toString(), 0, ContentAlign.CenterXY);
+                                Renderer.DrawText(antiMageManaVoid.font, x - 90 + antiMageManaVoid.menu_PosText_X_State, y + antiMageManaVoid.menu_PosText_Y_State, arrayObj[3].toString());
                             }
                         }
                     }
                     if (arrayObj[1]) {
                         if (isOnScreen) {
                             Renderer.SetDrawColor(255, 255, 255, 255);
-                            Renderer.DrawImage(antiMageManaVoid.iconManaPul, x - 90 + antiMageManaVoid.menu_PosRhomb_X_State, y - 35 + antiMageManaVoid.menu_PosRhomb_Y_State, 24, 24, 0, ContentAlign.CenterXY);
+                            Renderer.DrawImage(antiMageManaVoid.iconManaPul, x - 90 + antiMageManaVoid.menu_PosRhomb_X_State, y - 35 + antiMageManaVoid.menu_PosRhomb_Y_State, 24, 24);
                         }
                         if (arrayObj[2]) {
                             if (isOnScreen) {
                                 Renderer.SetDrawColor(antiMageManaVoid.menu_ColorPickerSkull_State[0], antiMageManaVoid.menu_ColorPickerSkull_State[1], antiMageManaVoid.menu_ColorPickerSkull_State[2], antiMageManaVoid.menu_ColorPickerSkull_State[3]);
-                                Renderer.DrawImage(antiMageManaVoid.iconDamage, x - 90 + antiMageManaVoid.menu_PosSkull_X_State, y - 15 + antiMageManaVoid.menu_PosSkull_Y_State, 24, 24, 0, ContentAlign.CenterXY);
+                                Renderer.DrawImage(antiMageManaVoid.iconDamage, x - 90 + antiMageManaVoid.menu_PosSkull_X_State, y - 15 + antiMageManaVoid.menu_PosSkull_Y_State, 24, 24);
                                 if (antiMageManaVoid.menu_CountDamage_State) {
                                     Renderer.SetDrawColor(antiMageManaVoid.menu_ColorPickerDamage_State[0], antiMageManaVoid.menu_ColorPickerDamage_State[1], antiMageManaVoid.menu_ColorPickerDamage_State[2], antiMageManaVoid.menu_ColorPickerDamage_State[3]);
-                                    Renderer.DrawText(antiMageManaVoid.font, x - 90 + antiMageManaVoid.menu_PosSkull_X_State, y + antiMageManaVoid.menu_PosSkull_Y_State, arrayObj[3].toString(), 0, ContentAlign.CenterXY);
+                                    Renderer.DrawText(antiMageManaVoid.font, x - 90 + antiMageManaVoid.menu_PosSkull_X_State, y + antiMageManaVoid.menu_PosSkull_Y_State, arrayObj[3].toString());
                                 }
                             }
                             continue;
@@ -257,10 +261,10 @@ AntiMageUltInfo.OnDraw = () => {
                     if (arrayObj[2]) {
                         if (isOnScreen) {
                             Renderer.SetDrawColor(antiMageManaVoid.menu_ColorPickerSkull_State[0], antiMageManaVoid.menu_ColorPickerSkull_State[1], antiMageManaVoid.menu_ColorPickerSkull_State[2], antiMageManaVoid.menu_ColorPickerSkull_State[3]);
-                            Renderer.DrawImage(antiMageManaVoid.iconDamage, x - 90 + antiMageManaVoid.menu_PosSkull_X_State, y - 15 + antiMageManaVoid.menu_PosSkull_Y_State, 24, 24, 0, ContentAlign.CenterXY);
+                            Renderer.DrawImage(antiMageManaVoid.iconDamage, x - 90 + antiMageManaVoid.menu_PosSkull_X_State, y - 15 + antiMageManaVoid.menu_PosSkull_Y_State, 24, 24);
                             if (antiMageManaVoid.menu_CountDamage_State) {
                                 Renderer.SetDrawColor(antiMageManaVoid.menu_ColorPickerDamage_State[0], antiMageManaVoid.menu_ColorPickerDamage_State[1], antiMageManaVoid.menu_ColorPickerDamage_State[2], antiMageManaVoid.menu_ColorPickerDamage_State[3]);
-                                Renderer.DrawText(antiMageManaVoid.font, x - 90 + antiMageManaVoid.menu_PosSkull_X_State, y + antiMageManaVoid.menu_PosSkull_Y_State, arrayObj[3].toString(), 0, ContentAlign.CenterXY);
+                                Renderer.DrawText(antiMageManaVoid.font, x - 90 + antiMageManaVoid.menu_PosSkull_X_State, y + antiMageManaVoid.menu_PosSkull_Y_State, arrayObj[3].toString());
                             }
                         }
                     }
@@ -341,7 +345,6 @@ AntiMageUltInfo.OnGameEnd = () => {
     antiMageManaVoid.myHero = null;
 };
 AntiMageUltInfo.OnScriptLoad = AntiMageUltInfo.OnGameStart = antiMageManaVoid.Load.Init;
-RegisterScript(AntiMageUltInfo);
 
 
 /***/ }),
@@ -353,7 +356,7 @@ RegisterScript(AntiMageUltInfo);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Minority\scripts\src\AntiMage-ManaVoidInfo.ts */"./src/AntiMage-ManaVoidInfo.ts");
+module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Melonity\scripts\src\AntiMage-ManaVoidInfo.ts */"./src/AntiMage-ManaVoidInfo.ts");
 
 
 /***/ })
