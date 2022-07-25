@@ -133,6 +133,19 @@ var customUtil;
     })
         .GetValue();
     Menu.GetFolder([...path, 'Courier']).SetImage(GetImagePath('items/courier'));
+    //Spinner
+    let spinnerENABLE = Menu.AddToggle([...path, 'Spinner'], 'Enable', false)
+        .SetNameLocale('ru', 'Включить')
+        .OnChange(state => {
+        spinnerENABLE = state.newValue;
+    })
+        .GetValue();
+    let spinnerBind = Menu.AddKeyBind([...path, 'Spinner'], 'Bind', Enum.ButtonCode.KEY_NONE)
+        .SetNameLocale('ru', 'Бинд');
+    Menu.GetFolder([...path, 'Spinner'])
+        .SetTip('При зажатом бинде ваш основной герой будет крутиться на месте', 'ru')
+        .SetTip('When the bind is clamped, your main hero will spin on the spot', 'en')
+        .SetImage('panorama/images/control_icons/refresh_psd.vtex_c');
     CustomUtility.OnScriptLoad = CustomUtility.OnGameStart = () => {
         if (GameRules.IsActiveGame()) {
             myHero = EntitySystem.GetLocalHero();
@@ -186,8 +199,8 @@ var customUtil;
         return -1;
     }
     function IsControllable(self, target) {
-        return self.GetProperty("C_DOTA_BaseNPC", "m_iIsControllableByPlayer64") ==
-            target.GetProperty("C_DOTA_BaseNPC", "m_iIsControllableByPlayer64");
+        return self.GetProperty('C_DOTA_BaseNPC', 'm_iIsControllableByPlayer64') ==
+            target.GetProperty('C_DOTA_BaseNPC', 'm_iIsControllableByPlayer64');
     }
     function FindCour() {
         if (!myHero)
@@ -199,6 +212,20 @@ var customUtil;
                 break;
             }
         }
+    }
+    function GetRotateTime(unit) {
+        let time = 0.5;
+        let turnRate = Number(unit.GetTurnRate().toString().substr(0, 4));
+        if (turnRate == 0.6) {
+            return 0.54;
+        }
+        else if (turnRate == 0.65 || turnRate == 0.7 || turnRate == 0.8) {
+            return 0.5;
+        }
+        else if (turnRate == 0.89) {
+            return 0.49;
+        }
+        return time;
     }
     CustomUtility.OnUpdate = () => {
         if (gameStarted) {
@@ -228,6 +255,21 @@ var customUtil;
                                 forcedType: (Renderer.WorldToScreen(bestPos)[2] ? Enum.ForcedType.None : Enum.ForcedType.Minimap)
                             });
                         }
+                    }
+                }
+            }
+            if (spinnerENABLE && spinnerBind.IsKeyDown()) {
+                let me = myPlayer.GetAssignedHero();
+                if (Engine.OnceAt(GetRotateTime(me))) {
+                    for (let rot = 0; rot <= 330; rot = rot + 30) {
+                        myPlayer.PrepareUnitOrdersStructed({
+                            orderIssuer: Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_HERO_ONLY,
+                            position: me.GetAbsOrigin().add(new Vector(Math.floor(Math.random() * (400 - 350 + 1)) + 350).Rotated(rot)),
+                            orderType: Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_DIRECTION,
+                            entity: me,
+                            forcedType: (Renderer.WorldToScreen(me.GetAbsOrigin())[2] ? Enum.ForcedType.None : Enum.ForcedType.Minimap),
+                            showEffects: true
+                        });
                     }
                 }
             }
