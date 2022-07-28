@@ -94,26 +94,31 @@
 /***/ (function(module, exports) {
 
 let AutoIceShardsTusk = {};
+Menu.AddLabel(['Custom Scripts', 'Heroes', 'Strength', 'Tusk', 'Trick'], 'Outdated')
+    .SetNameLocale('ru', 'Устаревшее')
+    .SetTip('Данный скрипт появился в официальной версии чита', 'ru')
+    .SetTip('This script appeared in the official version of the cheat', 'en');
 var TuskIceShards;
 (function (TuskIceShards) {
     TuskIceShards.HIndex = 'npc_dota_hero_tusk';
     TuskIceShards.gameStart = false;
     TuskIceShards.menuFunc = false;
     TuskIceShards.menuCursPosUse = false;
-    let menuLabel = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Strength', 'Tusk', 'Trick'], 'Enable', false).SetNameLocale('Трюк', "ru");
+    let menuLabel = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Strength', 'Tusk', 'Trick'], 'Enable', false).SetNameLocale('ru', 'Включить');
     menuLabel.OnChange(state => {
         TuskIceShards.menuFunc = state.newValue;
     });
     TuskIceShards.menuFunc = menuLabel.GetValue();
-    let menuCursPosUseLabel = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Strength', 'Tusk', 'Trick'], 'Use in the direction of the cursor', false).SetNameLocale('Использовать по направлению курсора', "ru");
+    let menuCursPosUseLabel = Menu.AddToggle(['Custom Scripts', 'Heroes', 'Strength', 'Tusk', 'Trick'], 'Use in the direction of the cursor', false).SetNameLocale('ru', 'Использовать по направлению курсора');
     menuCursPosUseLabel.OnChange(state => {
         TuskIceShards.menuCursPosUse = state.newValue;
     });
     TuskIceShards.menuCursPosUse = menuCursPosUseLabel.GetValue();
     TuskIceShards.MenuKeyBind = Menu.AddKeyBind(['Custom Scripts', 'Heroes', 'Strength', 'Tusk', 'Trick'], 'Клавиша активации', Enum.ButtonCode.KEY_NONE);
-    Menu.SetImage(['Custom Scripts', 'Heroes'], "~/menu/40x40/heroes.png");
-    Menu.SetImage(['Custom Scripts', 'Heroes', 'Strength'], "~/menu/40x40/strength.png");
-    Menu.SetImage(['Custom Scripts', 'Heroes', 'Strength', 'Tusk'], "panorama/images/heroes/icons/npc_dota_hero_tusk_png.vtex_c");
+    Menu.SetImage(['Custom Scripts', 'Heroes'], '~/menu/40x40/heroes.png');
+    Menu.SetImage(['Custom Scripts', 'Heroes', 'Strength'], '~/menu/40x40/strength.png');
+    Menu.SetImage(['Custom Scripts', 'Heroes', 'Strength', 'Tusk'], 'panorama/images/heroes/icons/npc_dota_hero_tusk_png.vtex_c');
+    Menu.GetFolder(['Custom Scripts', 'Heroes', 'Strength', 'Tusk', 'Trick']).SetNameLocale('ru', 'Трюк');
     let Load;
     (function (Load) {
         function Init() {
@@ -161,7 +166,7 @@ RegisterScript(AutoIceShardsTusk);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Minority\scripts\src\Tusk_AutoTrick.ts */"./src/Tusk_AutoTrick.ts");
+module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Melonity\scripts\src\Tusk_AutoTrick.ts */"./src/Tusk_AutoTrick.ts");
 
 
 /***/ })
