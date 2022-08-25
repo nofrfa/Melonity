@@ -99,6 +99,7 @@ Menu.AddButton(['Custom Scripts'], 'Open Telegram URL', () => {
 })
     .SetTip('If you are faced with incorrect operation of scripts or you have something to say, write to me in a telegram', 'en')
     .SetTip('Если вы столкнулись с неправильной работой скриптов или вам есть что сказать, напишите мне в телеграмме', 'ru');
+Menu.GetFolder(['Custom Scripts']).SetImage('~/menu/40x40/scripts.png');
 Menu.SetOrdering(['Custom Scripts', 'Information'], 2);
 Menu.SetOrdering(['Custom Scripts', 'Heroes'], 1);
 Menu.SetOrdering(['Custom Scripts', 'Other'], 0);
@@ -117,7 +118,7 @@ RegisterScript(zz_Core);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Minority\scripts\src\zz_Core.ts */"./src/zz_Core.ts");
+module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Melonity\scripts\src\zz_Core.ts */"./src/zz_Core.ts");
 
 
 /***/ })
