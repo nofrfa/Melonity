@@ -218,20 +218,19 @@ var ChatNotif;
             RegisterNotifier(NotifierType.STACK);
             RegisterNotifier(NotifierType.PULL);
         }
-        if (CHAT_MESSAGE) {
-            for (let i = 0; i < notifications.length; i++) {
-                let notification = notifications[i];
-                if (notification.waitForNext - GameRules.GetGameTime() <= 0) {
-                    notifications.splice(i, 1);
-                    continue;
-                }
-                if (!notification.sended) {
-                    let data = GetTypeInfo(notification.type);
-                    Chat.Print('ConsoleChat', `<font color=${data[0]}>${data[1]}</font>` + `<font color='#FFFFE0'>${data[2]}</font>`);
-                    notification.sended = true;
-                }
+        for (let i = 0; i < notifications.length; i++) {
+            let notification = notifications[i];
+            if (notification.waitForNext - GameRules.GetGameTime() <= 0) {
+                notifications.splice(i, 1);
+                continue;
+            }
+            if (CHAT_MESSAGE && !notification.sended) {
+                let data = GetTypeInfo(notification.type);
+                Chat.Print('ConsoleChat', `<font color=${data[0]}>${data[1]}</font>` + `<font color='#FFFFE0'>${data[2]}</font>`);
+                notification.sended = true;
             }
         }
+    
     };
     chatNotifications.OnParticleCreate = particle => {
         if (!myHero || !ENABLE)
