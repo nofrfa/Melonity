@@ -77,7 +77,7 @@
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "/";
+/******/ 	__webpack_require__.p = "";
 /******/
 /******/
 /******/ 	// Load entry module and return exports
@@ -113,26 +113,28 @@ var customUtil;
     const image = Renderer.LoadImage(`panorama/images/hud/reborn/roshan_timer_roshan_psd.vtex_c`);
     let roshENABLE = Menu.AddToggle([...path, 'Roshan InvisPos'], 'Enable', false)
         .SetNameLocale('ru', 'Включить')
-        .SetTip(`Adds buttons: ${GetTipStringImage('panorama/images/hud/reborn/roshan_timer_roshan_psd.vtex_c')}, at the entrance to Roshan pit buttons, clicking on which, your hero will stand in a position where he can be seen only when he is nearby`, 'en')
-        .SetTip(`Добавляет кнопки: ${GetTipStringImage('panorama/images/hud/reborn/roshan_timer_roshan_psd.vtex_c')}, у входа в логово Рошана кнопки, нажав на которые, ваш герой встанет в позицию, когда его можно будет увидеть только оказавшись рядом`, 'ru')
         .OnChange(state => {
         roshENABLE = state.newValue;
     })
         .GetValue();
-    Menu.GetFolder([...path, 'Roshan InvisPos']).SetImage('panorama/images/hud/reborn/roshan_timer_roshan_psd.vtex_c');
+    Menu.GetFolder([...path, 'Roshan InvisPos'])
+        .SetTip(`Adds buttons: ${GetTipStringImage('panorama/images/hud/reborn/roshan_timer_roshan_psd.vtex_c')}, at the entrance to Roshan pit buttons,\nclicking on which your hero will stand in a position\nwhere he can be seen only when he is nearby`, 'en')
+        .SetTip(`Добавляет кнопки: ${GetTipStringImage('panorama/images/hud/reborn/roshan_timer_roshan_psd.vtex_c')}, у входа в логово Рошана кнопки,\nнажав на которые ваш герой встанет в позицию,\nкогда его можно будет увидеть только оказавшись рядом`, 'ru')
+        .SetImage('panorama/images/hud/reborn/roshan_timer_roshan_psd.vtex_c');
     //Courier
     const shopPos = new Vector(4893, -1193, 128);
     const bestPos = new Vector(5253, -1083, 256);
     let cour;
     let courierENABLE = Menu.AddToggle([...path, 'Courier'], 'Safe Pos', false)
         .SetNameLocale('ru', 'Безопасная позиция')
-        .SetTip('If the courier is sent to a secret shop on the side of the forces of dire\nThe courier will get into a safer position', 'en')
-        .SetTip('Если курьер будет отправлен в потайную лавку на стороне сил тьмы\nКурьер встанет в более безопасную позицию', 'ru')
         .OnChange(state => {
         courierENABLE = state.newValue;
     })
         .GetValue();
-    Menu.GetFolder([...path, 'Courier']).SetImage(GetImagePath('items/courier'));
+    Menu.GetFolder([...path, 'Courier'])
+        .SetTip('If the courier is sent to a secret shop on the side of the forces of dire\nThe courier will get into a safer position', 'en')
+        .SetTip('Если курьер будет отправлен в потайную лавку на стороне сил тьмы\nКурьер встанет в более безопасную позицию', 'ru')
+        .SetImage(GetImagePath('items/courier'));
     //Spinner
     let spinnerENABLE = Menu.AddToggle([...path, 'Spinner'], 'Enable', false)
         .SetNameLocale('ru', 'Включить')
@@ -146,6 +148,22 @@ var customUtil;
         .SetTip('При зажатом бинде ваш основной герой будет крутиться на месте', 'ru')
         .SetTip('When the bind is clamped, your main hero will spin on the spot', 'en')
         .SetImage('panorama/images/control_icons/refresh_psd.vtex_c');
+    //Mouse Repeat Boost
+    let root = Panorama.GetDotaHudRoot();
+    let panorama = {
+        items: null,
+        neutrals: null
+    };
+    let mrbENABLE = Menu.AddToggle([...path, 'Mouse Repeat Boost'], 'Enable', false)
+        .SetNameLocale('ru', 'Включить')
+        .OnChange(state => {
+        mrbENABLE = state.newValue;
+    })
+        .GetValue();
+    Menu.GetFolder([...path, 'Mouse Repeat Boost'])
+        .SetTip('Увеличивает количество кликов при зажатой ПКМ', 'ru')
+        .SetTip('Increases the number of clicks when the RMB is clamped', 'en')
+        .SetImage('panorama/images/mouse_illustrations_png.vtex_c');
     CustomUtility.OnScriptLoad = CustomUtility.OnGameStart = () => {
         if (GameRules.IsActiveGame()) {
             myHero = EntitySystem.GetLocalHero();
@@ -157,6 +175,10 @@ var customUtil;
             myPlayer = null;
             gameStarted = false;
             cour = null;
+            panorama = {
+                items: null,
+                neutrals: null
+            };
         }
     };
     CustomUtility.OnGameEnd = () => {
@@ -164,6 +186,43 @@ var customUtil;
         myPlayer = null;
         gameStarted = false;
         cour = null;
+        panorama = {
+            items: null,
+            neutrals: null
+        };
+    };
+    let mouseBoostInterval;
+    function CheckOnPanorama(panoramaPanel) {
+        if (!panoramaPanel) {
+            return;
+        }
+        let [x, y] = panoramaPanel.GetPosition();
+        let [width, height] = panoramaPanel.GetSize();
+        return Input.IsCursorInRect(x, y, width, height);
+    }
+    CustomUtility.OnKeyEvent = (event) => {
+        if (gameStarted && mrbENABLE) {
+            if (event.event == Enum.KeyEvent.KEY_DOWN && event.key == Enum.ButtonCode.MOUSE_RIGHT) {
+                if (!mouseBoostInterval) {
+                    mouseBoostInterval = setInterval(() => {
+                        if (!Input.IsKeyDown(Enum.ButtonCode.MOUSE_RIGHT)) {
+                            clearInterval(mouseBoostInterval);
+                            mouseBoostInterval = null;
+                            return;
+                        }
+                        if (!CheckOnPanorama(panorama.items) && !CheckOnPanorama(panorama.neutrals) && !Engine.IsShopOpen() && !Engine.IsMenuOpen()) {
+                            myPlayer.PrepareUnitOrdersStructed({
+                                orderIssuer: Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_SELECTED_UNITS,
+                                orderType: Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION,
+                                position: Input.GetWorldCursorPos(),
+                                entity: myHero
+                            });
+                        }
+                    }, 1);
+                }
+                return;
+            }
+        }
     };
     CustomUtility.OnDraw = () => {
         if (gameStarted) {
@@ -258,6 +317,7 @@ var customUtil;
                     }
                 }
             }
+            //Переписать
             if (spinnerENABLE && spinnerBind.IsKeyDown()) {
                 let me = myPlayer.GetAssignedHero();
                 if (Engine.OnceAt(GetRotateTime(me))) {
@@ -272,6 +332,15 @@ var customUtil;
                         });
                     }
                 }
+            }
+            if (Engine.OnceAtByKey(1, 'Utility_MouseBoost_Panorama')) {
+                panorama = {
+                    items: root.FindChildFromPath(['Hud', 'HUDElements', 'lower_hud', 'center_with_stats', 'center_block',
+                        'inventory', 'inventory_items', 'inventoryContainer', 'inventory_list_container']),
+                    neutrals: root.FindChildFromPath(['Hud', 'HUDElements', 'lower_hud',
+                        'center_with_stats', 'center_block',
+                        'inventory_composition_layer_container'])
+                };
             }
         }
     };
@@ -288,7 +357,7 @@ var customUtil;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Melonity\scripts\src\Utility.ts */"./src/Utility.ts");
+module.exports = __webpack_require__(/*! ./src/Utility.ts */"./src/Utility.ts");
 
 
 /***/ })
