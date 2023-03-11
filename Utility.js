@@ -226,7 +226,7 @@ var customUtil;
                                     entity: myHero
                                 });
                             }
-                        }, 1);
+                        }, 50);
                     }
                     return;
                 }
