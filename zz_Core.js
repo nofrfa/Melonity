@@ -97,15 +97,13 @@ let zz_Core = {};
 Menu.AddButton(['Custom Scripts'], 'Open Telegram URL', () => {
     Engine.OpenURL('https://t.me/vevehife');
 })
-    .SetTip('If you are faced with incorrect operation of scripts or you have something to say, write to me in a telegram', 'en')
-    .SetTip('Если вы столкнулись с неправильной работой скриптов или вам есть что сказать, напишите мне в телеграмме', 'ru');
+    .SetTip('If you are faced with incorrect operation of scripts\nor you have something to say, write to me in a telegram', 'en')
+    .SetTip('Если вы столкнулись с неправильной работой скриптов\nили вам есть что сказать, напишите мне в телеграмме', 'ru');
 Menu.GetFolder(['Custom Scripts']).SetImage('~/menu/40x40/scripts.png');
 Menu.SetOrdering(['Custom Scripts', 'Information'], 3);
 Menu.SetOrdering(['Custom Scripts', 'Abuse'], 2);
 Menu.SetOrdering(['Custom Scripts', 'Heroes'], 1);
 Menu.SetOrdering(['Custom Scripts', 'Other'], 0);
-Menu.SetOrdering(['Custom Scripts', 'Heroes', 'Strength'], 2);
-Menu.SetOrdering(['Custom Scripts', 'Heroes', 'Agility'], 1);
 Menu.SetOrdering(['Custom Scripts', 'Heroes', 'Intelligence'], 0);
 RegisterScript(zz_Core);
 
