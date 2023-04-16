@@ -189,7 +189,7 @@ var customUtil;
             if (myHero.GetTeamNum() == 2) {
                 bestRadius = {
                     top: new Vector(-7003.44, -5432.97, 256),
-                    mid: new Vector(-6201.75, -5941.91, 256),
+                    mid: new Vector(-6193.88, -5953.76, 256),
                     bottom: new Vector(-5945.91, -6257.62, 256),
                     safe: new Vector(-6746.22, -6212.06, 384)
                 };
