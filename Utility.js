@@ -328,7 +328,7 @@ var customUtil;
         return time;
     }
     function GetBestCourierPos(positions = bestRadius) {
-        if (!bestRadius || GameRules.GetGameTime() / 60 >= courierOutFountainWorkTime)
+        if (!bestRadius || GameRules.GetGameTime() / 60 >= courierOutFountainWorkTime || GameRules.GetGameMode() == 13 || GameRules.GetGameMode() == 23)
             return;
         if (!cour || !cour.IsAlive())
             return;
