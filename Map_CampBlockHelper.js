@@ -148,7 +148,7 @@ var campBlockHelper;
         .SetComboBoxLocale('ru', ['Всегда', 'При зажатой ALT', 'При наличии вардов в инвентаре'])
         .OnChange(state => DisplayMode = state.newValue)
         .GetValue();
-    Menu.GetFolder(['Custom Scripts', 'Map']).SetImage('~/menu/40x40/map.png');
+    Menu.GetFolder(['Custom Scripts', 'Map']).SetOrdering(8).SetImage('~/menu/40x40/map.png');
     Menu.GetFolder(PATH)
         .SetTip('Скрипт показывает лучшие позиции для блока вражеских кемпов', 'ru')
         .SetTip('Script shows the best positions for blocking enemy camps', 'en')
