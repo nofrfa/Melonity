@@ -159,7 +159,7 @@ var campBlockHelper;
             myPlayer = EntitySystem.GetLocalPlayer();
             let team = myPlayer.GetTeamNum();
             if (team == 2 || team == 3)
-                actualWards = wards[3];
+                actualWards = wards[team];
         }
     };
     CampBlockHelper.OnGameEnd = () => {
