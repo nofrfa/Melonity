@@ -86,10 +86,10 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/CampBlockHelper.ts":
-/*!********************************!*\
-  !*** ./src/CampBlockHelper.ts ***!
-  \********************************/
+/***/ "./src/Map_CampBlockHelper.ts":
+/*!************************************!*\
+  !*** ./src/Map_CampBlockHelper.ts ***!
+  \************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -101,19 +101,21 @@
         const wards = {
             2: [
                 new Vector(-2740.5, 3322.12, 256),
+                new Vector(-1983.23, 3321.57, 256),
                 new Vector(-3206.1, 4500.16, 128),
-                new Vector(-4425.2, 4602.43, 0),
-                new Vector(-1084.34, 5340.77, 128),
-                new Vector(-1809.86, 8549.28, 128),
+                new Vector(-5183.63, 4608.9, 0),
+                new Vector(-1023.58, 8405.63, 128),
+                new Vector(-1087.47, 5344.55, 128),
                 new Vector(-3903.05, 8739.46, 128),
                 new Vector(-4094.47, 7709.23, 128),
-                new Vector(292.16, 7471.65, 0),
+                new Vector(830.039, 7743.44, 31.0197),
                 new Vector(2792.69, 8069.18, 256),
                 new Vector(1519.69, 4328.81, 128),
-                new Vector(1.95665, 3006.25, 128),
-                new Vector(4759.42, -235.203, 256),
+                new Vector(15.6566, 2949.88, 128),
+                new Vector(4774.49, -256.136, 256),
                 new Vector(3003.78, -1528.9, 256),
-                new Vector(8682.05, -735.307, 256)
+                new Vector(3656.65, -1452.33, 256),
+                new Vector(8724.8, -767.378, 256),
             ],
             3: [
                 new Vector(-2434.02, -4006.03, 256),
@@ -121,25 +123,22 @@
                 new Vector(771.463, -3901.92, 256),
                 new Vector(3250.42, -2955, 128),
                 new Vector(4813.76, -3505.17, 128),
-                new Vector(3325.34, -5579.14, 128),
-                new Vector(4851.15, -6961.74, 0),
+                new Vector(3334.48, -5761.97, 128),
+                new Vector(4441.18, -7034.26, 128),
                 new Vector(3781.09, -8743.02, 128),
-                new Vector(1304.49, -8079.63, 128),
                 new Vector(-498.742, -7741.85, 0),
-                new Vector(-2594.48, -8705.46, 256),
-                new Vector(-2093.59, -7977.32, 256),
                 new Vector(-8765.33, 432.869, 257.958),
                 new Vector(-4916.79, 187.949, 256),
                 new Vector(-4139.94, 1290.67, 256),
+                new Vector(-2429.15, -8712.56, 256),
+                new Vector(1967.26, -8792.65, 128),
                 new Vector(-3499.83, 604.119, 256)
             ]
         };
-        let actualWards;
+        let actualWards = [];
         let myHero, myPlayer;
         let ENABLE = Menu.AddToggle(PATH, 'Enable', false)
             .SetNameLocale('ru', 'Включить')
-            .SetTip('1', 'ru')
-            .SetTip('1 (en)', 'en')
             .OnChange(state => ENABLE = state.newValue)
             .GetValue();
         let DisplayMode = Menu.AddComboBox(PATH, 'Display', ['Always', 'With ALT', 'If the Inventory contains Wards'], 1)
@@ -159,12 +158,19 @@
                 myPlayer = EntitySystem.GetLocalPlayer();
                 let team = myPlayer.GetTeamNum();
                 if (team == 2 || team == 3)
-                    actualWards = wards[team];
+                    actualWards = wards[3];
             }
         };
         CampBlockHelper.OnGameEnd = () => {
             myHero = myPlayer = null;
+            actualWards = [];
         };
+        function SwapWardToSentry(item) {
+            if (item.GetName() == 'item_ward_dispenser' && item.GetToggleState()) {
+                item.Toggle();
+            }
+            return true;
+        }
         CampBlockHelper.OnDraw = () => {
             if (!ENABLE || !myHero)
                 return;
@@ -191,8 +197,8 @@
                 let opacity = 120;
                 if (Input.IsCursorInRect(x - 15, y - 15, 30, 30)) {
                     opacity = 255;
-                    let sentry = myHero.GetItem('item_ward_sentry', true);
-                    if (sentry && Input.IsKeyDown(Enum.ButtonCode.MOUSE_LEFT) && Engine.OnceAtByKey(0.2, 'CampBlockHelperCD'))
+                    let sentry = myHero.GetItem('item_ward_sentry', true) || myHero.GetItem('item_ward_dispenser', true);
+                    if (sentry && Input.IsKeyDown(Enum.ButtonCode.MOUSE_LEFT) && Engine.OnceAtByKey(0.2, 'CampBlockHelperCD') && SwapWardToSentry(sentry))
                         myPlayer.PrepareUnitOrdersStructed({
                             orderIssuer: Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY,
                             orderType: Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_POSITION,
@@ -227,16 +233,16 @@
     /***/ }),
     
     /***/ 0:
-    /*!**************************************!*\
-      !*** multi ./src/CampBlockHelper.ts ***!
-      \**************************************/
+    /*!******************************************!*\
+      !*** multi ./src/Map_CampBlockHelper.ts ***!
+      \******************************************/
     /*! no static exports found */
     /***/ (function(module, exports, __webpack_require__) {
     
-    module.exports = __webpack_require__(/*! ./src/CampBlockHelper.ts */"./src/CampBlockHelper.ts");
+    module.exports = __webpack_require__(/*! ./src/Map_CampBlockHelper.ts */"./src/Map_CampBlockHelper.ts");
     
     
     /***/ })
     
     /******/ });
-    //# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vd2VicGFjay9ib290c3RyYXAiLCJ3ZWJwYWNrOi8vLy4vc3JjL0NhbXBCbG9ja0hlbHBlci50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiO1FBQUE7UUFDQTs7UUFFQTtRQUNBOztRQUVBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBOztRQUVBO1FBQ0E7O1FBRUE7UUFDQTs7UUFFQTtRQUNBO1FBQ0E7OztRQUdBO1FBQ0E7O1FBRUE7UUFDQTs7UUFFQTtRQUNBO1FBQ0E7UUFDQSwwQ0FBMEMsZ0NBQWdDO1FBQzFFO1FBQ0E7O1FBRUE7UUFDQTtRQUNBO1FBQ0Esd0RBQXdELGtCQUFrQjtRQUMxRTtRQUNBLGlEQUFpRCxjQUFjO1FBQy9EOztRQUVBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQSx5Q0FBeUMsaUNBQWlDO1FBQzFFLGdIQUFnSCxtQkFBbUIsRUFBRTtRQUNySTtRQUNBOztRQUVBO1FBQ0E7UUFDQTtRQUNBLDJCQUEyQiwwQkFBMEIsRUFBRTtRQUN2RCxpQ0FBaUMsZUFBZTtRQUNoRDtRQUNBO1FBQ0E7O1FBRUE7UUFDQSxzREFBc0QsK0RBQStEOztRQUVySDtRQUNBOzs7UUFHQTtRQUNBOzs7Ozs7Ozs7Ozs7QUNsRkE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxxQkFBcUI7QUFDckI7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EsQ0FBQywwQ0FBMEMiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZVJvb3QiOiIifQ==
+    //# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vd2VicGFjay9ib290c3RyYXAiLCJ3ZWJwYWNrOi8vLy4vc3JjL01hcF9DYW1wQmxvY2tIZWxwZXIudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IjtRQUFBO1FBQ0E7O1FBRUE7UUFDQTs7UUFFQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTs7UUFFQTtRQUNBOztRQUVBO1FBQ0E7O1FBRUE7UUFDQTtRQUNBOzs7UUFHQTtRQUNBOztRQUVBO1FBQ0E7O1FBRUE7UUFDQTtRQUNBO1FBQ0EsMENBQTBDLGdDQUFnQztRQUMxRTtRQUNBOztRQUVBO1FBQ0E7UUFDQTtRQUNBLHdEQUF3RCxrQkFBa0I7UUFDMUU7UUFDQSxpREFBaUQsY0FBYztRQUMvRDs7UUFFQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0EseUNBQXlDLGlDQUFpQztRQUMxRSxnSEFBZ0gsbUJBQW1CLEVBQUU7UUFDckk7UUFDQTs7UUFFQTtRQUNBO1FBQ0E7UUFDQSwyQkFBMkIsMEJBQTBCLEVBQUU7UUFDdkQsaUNBQWlDLGVBQWU7UUFDaEQ7UUFDQTtRQUNBOztRQUVBO1FBQ0Esc0RBQXNELCtEQUErRDs7UUFFckg7UUFDQTs7O1FBR0E7UUFDQTs7Ozs7Ozs7Ozs7O0FDbEZBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EscUJBQXFCO0FBQ3JCO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLENBQUMsMENBQTBDIiwiZmlsZSI6Im1haW4uanMiLCJzb3VyY2VSb290IjoiIn0=
