@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/zz_Core.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -98,29 +98,38 @@ Menu.AddButton(['Custom Scripts'], 'Open Telegram URL', () => {
     Engine.OpenURL('https://t.me/vevehife');
 })
     .SetTip('If you are faced with incorrect operation of scripts\nor you have something to say, write to me in a telegram', 'en')
-    .SetTip('Если вы столкнулись с неправильной работой скриптов\nили вам есть что сказать, напишите мне в телеграмме', 'ru');
-Menu.GetFolder(['Custom Scripts']).SetImage('~/menu/40x40/scripts.png');
-Menu.SetOrdering(['Custom Scripts', 'Information'], 3);
-Menu.SetOrdering(['Custom Scripts', 'Abuse'], 2);
-Menu.SetOrdering(['Custom Scripts', 'Heroes'], 1);
-Menu.SetOrdering(['Custom Scripts', 'Other'], 0);
-Menu.SetOrdering(['Custom Scripts', 'Heroes', 'Intelligence'], 0);
+    .SetTip('Если вы столкнулись с неправильной работой скриптов\nили вам есть что сказать, напишите мне в телеграмме', 'ru')
+    .SetOrdering(-200000);
+const orderingAndImages = {
+    'Player': { order: 10, image: '~/menu/40x40/player.png' },
+    'Map': { order: 9, image: '~/menu/40x40/map.png' },
+    'Esp': { order: 8, image: '~/menu/40x40/esp.png' },
+    'Safeguard': { order: 7, image: '~/menu/40x40/safeguard.png' },
+    'Information': { order: 6, image: '~/menu/40x40/info.png' },
+    'Creeps': { order: 5, image: '~/menu/40x40/creeps.png' },
+    'Griefing': { order: 4, image: '~/menu/40x40/grief.png' },
+    'General': { order: 3, image: '~/menu/40x40/general.png' },
+    'Abuse': { order: 2, image: '~/menu/40x40/abuse.png' },
+    'Heroes': { order: 1, image: '~/menu/40x40/heroes.png' },
+    'Other': { order: -1, image: '~/menu/40x40/common.png' }
+};
+Menu.GetFolderOptions([]).forEach(x => {
+    if (x.GetName() == 'Custom Scripts') {
+        Menu.GetFolder(['Custom Scripts']).SetImage('~/menu/40x40/scripts.png');
+        Menu.GetFolderOptions(['Custom Scripts']).forEach(s => {
+            let info = orderingAndImages[s.GetName()];
+            if (info) {
+                Menu.GetFolder(['Custom Scripts', s.GetName()])
+                    .SetImage(info.image)
+                    .SetOrdering(info.order);
+            }
+        });
+    }
+});
 RegisterScript(zz_Core);
-
-
-/***/ }),
-
-/***/ 0:
-/*!******************************!*\
-  !*** multi ./src/zz_Core.ts ***!
-  \******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(/*! ./src/zz_Core.ts */"./src/zz_Core.ts");
 
 
 /***/ })
 
 /******/ });
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vd2VicGFjay9ib290c3RyYXAiLCJ3ZWJwYWNrOi8vLy4vc3JjL3p6X0NvcmUudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IjtRQUFBO1FBQ0E7O1FBRUE7UUFDQTs7UUFFQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTs7UUFFQTtRQUNBOztRQUVBO1FBQ0E7O1FBRUE7UUFDQTtRQUNBOzs7UUFHQTtRQUNBOztRQUVBO1FBQ0E7O1FBRUE7UUFDQTtRQUNBO1FBQ0EsMENBQTBDLGdDQUFnQztRQUMxRTtRQUNBOztRQUVBO1FBQ0E7UUFDQTtRQUNBLHdEQUF3RCxrQkFBa0I7UUFDMUU7UUFDQSxpREFBaUQsY0FBYztRQUMvRDs7UUFFQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0EseUNBQXlDLGlDQUFpQztRQUMxRSxnSEFBZ0gsbUJBQW1CLEVBQUU7UUFDckk7UUFDQTs7UUFFQTtRQUNBO1FBQ0E7UUFDQSwyQkFBMkIsMEJBQTBCLEVBQUU7UUFDdkQsaUNBQWlDLGVBQWU7UUFDaEQ7UUFDQTtRQUNBOztRQUVBO1FBQ0Esc0RBQXNELCtEQUErRDs7UUFFckg7UUFDQTs7O1FBR0E7UUFDQTs7Ozs7Ozs7Ozs7O0FDbEZBO0FBQ0E7QUFDQTtBQUNBLENBQUM7QUFDRDtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBIiwiZmlsZSI6Im1haW4uanMiLCJzb3VyY2VSb290IjoiIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vd2VicGFjay9ib290c3RyYXAiLCJ3ZWJwYWNrOi8vLy4vc3JjL3p6X0NvcmUudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IjtRQUFBO1FBQ0E7O1FBRUE7UUFDQTs7UUFFQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTs7UUFFQTtRQUNBOztRQUVBO1FBQ0E7O1FBRUE7UUFDQTtRQUNBOzs7UUFHQTtRQUNBOztRQUVBO1FBQ0E7O1FBRUE7UUFDQTtRQUNBO1FBQ0EsMENBQTBDLGdDQUFnQztRQUMxRTtRQUNBOztRQUVBO1FBQ0E7UUFDQTtRQUNBLHdEQUF3RCxrQkFBa0I7UUFDMUU7UUFDQSxpREFBaUQsY0FBYztRQUMvRDs7UUFFQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0EseUNBQXlDLGlDQUFpQztRQUMxRSxnSEFBZ0gsbUJBQW1CLEVBQUU7UUFDckk7UUFDQTs7UUFFQTtRQUNBO1FBQ0E7UUFDQSwyQkFBMkIsMEJBQTBCLEVBQUU7UUFDdkQsaUNBQWlDLGVBQWU7UUFDaEQ7UUFDQTtRQUNBOztRQUVBO1FBQ0Esc0RBQXNELCtEQUErRDs7UUFFckg7UUFDQTs7O1FBR0E7UUFDQTs7Ozs7Ozs7Ozs7O0FDbEZBO0FBQ0E7QUFDQTtBQUNBLENBQUM7QUFDRDtBQUNBO0FBQ0E7QUFDQTtBQUNBLGVBQWUsOENBQThDO0FBQzdELFlBQVksMENBQTBDO0FBQ3RELFlBQVksMENBQTBDO0FBQ3RELGtCQUFrQixnREFBZ0Q7QUFDbEUsb0JBQW9CLDJDQUEyQztBQUMvRCxlQUFlLDZDQUE2QztBQUM1RCxpQkFBaUIsNENBQTRDO0FBQzdELGdCQUFnQiw4Q0FBOEM7QUFDOUQsY0FBYyw0Q0FBNEM7QUFDMUQsZUFBZSw2Q0FBNkM7QUFDNUQsY0FBYztBQUNkO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxTQUFTO0FBQ1Q7QUFDQSxDQUFDO0FBQ0QiLCJmaWxlIjoienpfQ29yZS5qcyIsInNvdXJjZVJvb3QiOiIifQ==
