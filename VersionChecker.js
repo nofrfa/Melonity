@@ -17,12 +17,12 @@ var VersionChecker = {};
             }
             var actualVer = request.GetBody().split('\n')[0].match(/(\d+\.\d+\.\d+)/)[1];
             msg('------------- Checking versions');
-            msg('Installed version - ' + installedVersion);
+            msg('Installed version - ' + installedVersionAntiError);
             msg('Latest version - ' + actualVer);
             var locale = Menu.GetLocale();
             msg('------------- ' + (locale == 'en' ? 'Result' : 'Результат'));
             var requireUpdate = locale == 'en' ? 'Update required' : 'Требуется обновление';
-            if (installedVersion == actualVer) {
+            if (installedVersionAntiError == actualVer) {
                 requireUpdate = locale == 'en' ? 'No update required' : 'Обновление не требуется';
                 UpdaterInfo.SetHidden(true);
             }
