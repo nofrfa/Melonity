@@ -237,7 +237,7 @@ var customUtil;
             gameStarted = true;
             let team = myPlayer.GetTeamNum();
             if (team == 2 || team == 3)
-                actualFountainPoses = fountainPoses[3];
+                actualFountainPoses = fountainPoses[team];
             if (team == 2) {
                 bestRadius = {
                     top: new Vector(-7003.44, -5432.97, 256),
