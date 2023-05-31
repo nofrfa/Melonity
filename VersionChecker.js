@@ -1,4 +1,4 @@
-const installedVersionAntiError = '1.0.3';
+const installedVersionAntiError = '1.0.4';
 var VersionChecker = {};
 (function () {
     var PATH = ['Custom Scripts'];
