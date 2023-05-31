@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/Utility.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -91,8 +91,12 @@
   !*** ./src/Utility.ts ***!
   \************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.customUtil = void 0;
 let CustomUtility = {};
 function GetTipStringImage(imagePath) {
     return '{{' + imagePath + ':false}}';
@@ -104,8 +108,10 @@ var customUtil;
 (function (customUtil) {
     let myHero, myPlayer, gameStarted;
     const path = ['Custom Scripts', 'Other'];
+    let screenSize = Renderer.GetScreenSize();
+    let ration = 1080 / screenSize[1];
     //Roshan FuckPos
-    const Poses = [
+    const roshPoses = [
         //top
         new Vector(-7333.53, 7582.62, 0.4375),
         new Vector(-7463, 7417.81, 9.25),
@@ -115,17 +121,55 @@ var customUtil;
         new Vector(7497.16, -7605.5, 6.3125),
         new Vector(7360.06, -7783.78, 0)
     ];
-    const image = Renderer.LoadImage(`panorama/images/hud/reborn/roshan_timer_roshan_psd.vtex_c`);
+    const roshImage = Renderer.LoadImage(`panorama/images/hud/reborn/roshan_timer_roshan_psd.vtex_c`);
     let roshENABLE = Menu.AddToggle([...path, 'Roshan InvisPos'], 'Enable', false)
         .SetNameLocale('ru', 'Включить')
         .OnChange(state => {
         roshENABLE = state.newValue;
     })
         .GetValue();
+    let roshShowInRadius = Menu.AddToggle([...path, 'Roshan InvisPos'], 'Display only if hero is near', true)
+        .SetNameLocale('ru', 'Отображать только если герой рядом')
+        .OnChange(state => roshShowInRadius = state.newValue)
+        .GetValue();
     Menu.GetFolder([...path, 'Roshan InvisPos'])
         .SetTip(`Adds buttons: ${GetTipStringImage('panorama/images/hud/reborn/roshan_timer_roshan_psd.vtex_c')}, at the entrance to Roshan pit buttons,\nclicking on which your hero will stand in a position\nwhere he can be seen only when he is nearby`, 'en')
         .SetTip(`Добавляет кнопки: ${GetTipStringImage('panorama/images/hud/reborn/roshan_timer_roshan_psd.vtex_c')}, у входа в логово Рошана кнопки,\nнажав на которые ваш герой встанет в позицию,\nкогда его можно будет увидеть только оказавшись рядом`, 'ru')
         .SetImage('panorama/images/hud/reborn/roshan_timer_roshan_psd.vtex_c');
+    //Fountain FuckPos
+    const fountainPoses = {
+        2: [
+            new Vector(6360.78, 6198.5, 374.031),
+            new Vector(6726.31, 5830.59, 372.094),
+            new Vector(6489.22, 5981.31, 347.969)
+        ],
+        3: [
+            new Vector(-6878.84, -5855.91, 352.094),
+            new Vector(-6360.28, -6362.41, 349.219)
+        ]
+    };
+    let actualFountainPoses = [];
+    const fountainImage = Renderer.LoadImage(`panorama/images/spellicons/fountain_heal_png.vtex_c`);
+    let fountainENABLE = Menu.AddToggle([...path, 'Fountain InvisPos'], 'Enable', false)
+        .SetNameLocale('ru', 'Включить')
+        .OnChange(state => {
+        roshENABLE = state.newValue;
+    })
+        .GetValue();
+    let fountainShowInRadius = Menu.AddToggle([...path, 'Fountain InvisPos'], 'Display only if hero is near', true)
+        .SetNameLocale('ru', 'Отображать только если герой рядом')
+        .OnChange(state => fountainShowInRadius = state.newValue)
+        .GetValue();
+    Menu.GetFolder([...path, 'Fountain InvisPos'])
+        .SetTip(`WORKS ONLY IN INVISIBILITY!\n\n
+						Adds buttons: ${GetTipStringImage('panorama/images/spellicons/fountain_heal_png.vtex_c')}, located near the fountain,\n
+						by clicking on which your hero will stand in a position\n
+						where the fountain won't attack you, but you will have vision inside the fountain`, 'en')
+        .SetTip(`РАБОТАЕТ ТОЛЬКО В ИНВИЗЕ!\n\n
+						Добавляет кнопки: ${GetTipStringImage('panorama/images/spellicons/fountain_heal_png.vtex_c')}, находящиеся возле фонтана,\n
+						нажав на которые ваш герой встанет в позицию,\n
+						когда вас не будет атаковать фонтан, но у вас будет вижен в фонтане`, 'ru')
+        .SetImage('panorama/images/spellicons/fountain_heal_png.vtex_c');
     //Courier
     const shopPos = new Vector(4893, -1193, 128);
     const safeShopPos = new Vector(5253, -1083, 256);
@@ -191,7 +235,10 @@ var customUtil;
             myHero = EntitySystem.GetLocalHero();
             myPlayer = EntitySystem.GetLocalPlayer();
             gameStarted = true;
-            if (myHero.GetTeamNum() == 2) {
+            let team = myPlayer.GetTeamNum();
+            if (team == 2 || team == 3)
+                actualFountainPoses = fountainPoses[3];
+            if (team == 2) {
                 bestRadius = {
                     top: new Vector(-7003.44, -5432.97, 256),
                     mid: new Vector(-6193.88, -5953.76, 256),
@@ -199,7 +246,7 @@ var customUtil;
                     safe: new Vector(-6746.22, -6212.06, 384)
                 };
             }
-            else if (myHero.GetTeamNum() == 3) {
+            else if (team == 3) {
                 bestRadius = {
                     top: new Vector(5875.53, 6143.09, 256),
                     mid: new Vector(6298.56, 5722.81, 256),
@@ -215,6 +262,8 @@ var customUtil;
                 neutrals: null
             };
             bestRadius = null;
+            lastOrder = null;
+            actualFountainPoses = [];
         }
     };
     CustomUtility.OnGameEnd = () => {
@@ -228,6 +277,7 @@ var customUtil;
         };
         bestRadius = null;
         lastOrder = null;
+        actualFountainPoses = [];
     };
     let mouseBoostInterval;
     function CheckOnPanorama(panoramaPanel) {
@@ -239,7 +289,7 @@ var customUtil;
         return Input.IsCursorInRect(x, y, width, height);
     }
     let exOrders = [Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_MOVE];
-    let accessOrders = [Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, Enum.UnitOrder.DOTA_UNIT_ORDER_PICKUP_ITEM, Enum.UnitOrder.DOTA_UNIT_ORDER_PICKUP_RUNE];
+    let accessOrders = [Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_DIRECTION, Enum.UnitOrder.DOTA_UNIT_ORDER_PICKUP_ITEM, Enum.UnitOrder.DOTA_UNIT_ORDER_PICKUP_RUNE];
     let lastOrder;
     CustomUtility.OnPrepareUnitOrders = (event) => {
         if (gameStarted && mrbENABLE) {
@@ -247,6 +297,7 @@ var customUtil;
                 if (mouseBoostInterval) {
                     clearInterval(mouseBoostInterval);
                     mouseBoostInterval = null;
+                    lastOrder = null;
                 }
             }
             else {
@@ -267,7 +318,7 @@ var customUtil;
                                     return;
                                 }
                                 if (!CheckOnPanorama(panorama.items) && !CheckOnPanorama(panorama.neutrals) && !Engine.IsShopOpen() &&
-                                    !Engine.IsMenuOpen() && !Input.IsCursorOnMinimap() && (index != 0 ? event.target && event.target.IsExist() : true)) {
+                                    !Engine.IsMenuOpen() && !Input.IsCursorOnMinimap() && (index > 1 ? event.target && event.target.IsExist() : true)) {
                                     myPlayer.PrepareUnitOrdersStructed({
                                         orderIssuer: event.orderIssuer,
                                         orderType: event.order,
@@ -284,25 +335,57 @@ var customUtil;
             }
         }
     };
+    function InRadiusByPos(pos, radius = 2300) {
+        return Dist2D(myHero, pos) < radius;
+    }
     CustomUtility.OnDraw = () => {
-        if (gameStarted) {
-            if (roshENABLE && !Engine.IsShopOpen()) {
-                for (let pos of Poses) {
+        if (gameStarted && !Engine.IsShopOpen()) {
+            if (roshENABLE) {
+                let size = 32 * ration;
+                let sizeImg = 24 * ration;
+                for (let pos of roshPoses) {
+                    if (roshShowInRadius && !InRadiusByPos(pos))
+                        continue;
                     let [x, y, OnScreen] = Renderer.WorldToScreen(pos);
                     if (!OnScreen)
                         continue;
                     Renderer.PushDrawCentered();
                     Renderer.SetDrawColor(0, 0, 0, 122);
-                    Renderer.DrawFilledRect(x, y, 32, 32, 30);
+                    Renderer.DrawFilledRect(x, y, size, size, 30);
                     Renderer.SetDrawColor(255, 255, 255, 122);
-                    Renderer.DrawImage(image, x, y - 1, 24, 24);
-                    if (Input.IsCursorInRect(x, y, 32, 32, Enum.ContentAlign.CenterXY)) {
+                    Renderer.DrawImage(roshImage, x, y - 1, sizeImg, sizeImg);
+                    if (Input.IsCursorInRect(x, y, size, size, Enum.ContentAlign.CenterXY)) {
                         Renderer.SetDrawColor(0, 255, 0, 122);
-                        Renderer.DrawOutlineRect(x, y, 32, 32, 30);
+                        Renderer.DrawOutlineRect(x, y, size, size, 30);
                     }
                     else {
                         Renderer.SetDrawColor(255, 255, 255, 122);
-                        Renderer.DrawOutlineRect(x, y, 32, 32, 30);
+                        Renderer.DrawOutlineRect(x, y, size, size, 30);
+                    }
+                    Renderer.PopDrawOptions();
+                }
+            }
+            if (fountainENABLE && actualFountainPoses) {
+                let size = 24 * ration;
+                let sizeImg = 18 * ration;
+                for (let pos of actualFountainPoses) {
+                    if (fountainShowInRadius && !InRadiusByPos(pos))
+                        continue;
+                    let [x, y, OnScreen] = Renderer.WorldToScreen(pos);
+                    if (!OnScreen)
+                        continue;
+                    Renderer.PushDrawCentered();
+                    Renderer.SetDrawColor(0, 0, 0, 122);
+                    Renderer.DrawFilledRect(x, y, size, size, 30);
+                    Renderer.SetDrawColor(255, 255, 255, 122);
+                    Renderer.DrawImage(fountainImage, x, y - 1, sizeImg, sizeImg);
+                    if (Input.IsCursorInRect(x, y, size, size, Enum.ContentAlign.CenterXY)) {
+                        Renderer.SetDrawColor(0, 255, 0, 122);
+                        Renderer.DrawOutlineRect(x, y, size, size, 30);
+                    }
+                    else {
+                        Renderer.SetDrawColor(255, 255, 255, 122);
+                        Renderer.DrawOutlineRect(x, y, size, size, 30);
                     }
                     Renderer.PopDrawOptions();
                 }
@@ -346,6 +429,22 @@ var customUtil;
         }
         return time;
     }
+    function GetRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    function IsntUndefined(value, withFalse) {
+        return withFalse ? (value !== false) : value !== undefined && value !== null;
+    }
+    function GetAngleToPos(_e1, _e2, prefer = _e2, inrad) {
+        let [a, b] = [IsntUndefined(_e1.x) ? _e1 : _e1.GetAbsOrigin(), IsntUndefined(_e2.x) ? _e2 : _e2.GetAbsOrigin()];
+        if (prefer == _e1) {
+            [a, b] = [b, a];
+        }
+        let atan2 = Math.atan2(b.y - a.y, b.x - a.x);
+        return inrad ? atan2 : (atan2 * (180 / Math.PI));
+    }
     function GetBestCourierPos(positions = bestRadius) {
         if (!bestRadius || (courierOutFountainWorkTime != 0 && GameRules.GetGameTime() / 60 >= courierOutFountainWorkTime) || GameRules.GetGameMode() == 15 || GameRules.GetGameMode() == 23)
             return;
@@ -366,19 +465,33 @@ var customUtil;
             bestPos = poses.sort((a, b) => {
                 return Dist2D(a, heroPos) - Dist2D(b, heroPos);
             })[0];
-        if (Dist2D(cour, bestPos) < 150)
+        if (Dist2D(cour, bestPos) < 100)
             return;
-        return bestPos;
+        return bestPos.add(new Vector(GetRandomInt(20, 80)).Rotated(GetAngleToPos(bestPos, myHero.GetFountainPosition())));
     }
     CustomUtility.OnUpdate = () => {
         if (gameStarted) {
-            if (roshENABLE && !Engine.IsShopOpen()) {
-                for (let pos of Poses) {
-                    let [x, y, OnScreen] = Renderer.WorldToScreen(pos);
-                    if (!OnScreen)
-                        continue;
-                    if (Input.IsCursorInRect(x, y, 32, 32, Enum.ContentAlign.CenterXY) && Input.IsKeyDownOnce(Enum.ButtonCode.MOUSE_LEFT)) {
-                        myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, null, pos, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, myHero, false, true);
+            if (!Engine.IsShopOpen()) {
+                if (roshENABLE && (!roshShowInRadius || InRadiusByPos(roshPoses[1]))) {
+                    let size = 32 * ration;
+                    for (let pos of roshPoses) {
+                        let [x, y, OnScreen] = Renderer.WorldToScreen(pos);
+                        if (!OnScreen)
+                            continue;
+                        if (Input.IsCursorInRect(x, y, size, size, Enum.ContentAlign.CenterXY) && Input.IsKeyDownOnce(Enum.ButtonCode.MOUSE_LEFT)) {
+                            myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, null, pos, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, myHero, false, true);
+                        }
+                    }
+                }
+                if (fountainENABLE && (!fountainShowInRadius || InRadiusByPos(fountainPoses[0])) && actualFountainPoses) {
+                    let size = 24 * ration;
+                    for (let pos of actualFountainPoses) {
+                        let [x, y, OnScreen] = Renderer.WorldToScreen(pos);
+                        if (!OnScreen)
+                            continue;
+                        if (Input.IsCursorInRect(x, y, size, size, Enum.ContentAlign.CenterXY) && Input.IsKeyDownOnce(Enum.ButtonCode.MOUSE_LEFT)) {
+                            myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, null, pos, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, myHero, false, true);
+                        }
                     }
                 }
             }
@@ -387,9 +500,9 @@ var customUtil;
                     FindCour();
                 }
             }
-            if (courierSafePosENABLE && myHero.GetTeamNum() == 3) {
-                if (Engine.OnceAtByKey(1, 'Courier_SafePos')) {
-                    if (cour && cour.IsExist() && cour.IsAlive()) {
+            if (cour && cour.IsExist() && cour.IsAlive()) {
+                if (courierSafePosENABLE && myHero.GetTeamNum() == 3) {
+                    if (Engine.OnceAtByKey(1, 'Courier_SafePos')) {
                         let cour_state = cour.GetCourierState();
                         if (cour_state == 0 && Dist2D(shopPos, cour) <= 700 && Dist2D(safeShopPos, cour) >= 150) {
                             myPlayer.PrepareUnitOrdersStructed({
@@ -401,17 +514,17 @@ var customUtil;
                         }
                     }
                 }
-            }
-            if (courierOutFountainENABLE) {
-                if (Engine.OnceAtByKey(1, 'Courier_BestPos') && cour && cour.IsExist() && cour.IsAlive()) {
-                    let bestPos = GetBestCourierPos();
-                    if (bestPos) {
-                        myPlayer.PrepareUnitOrdersStructed({
-                            position: bestPos,
-                            orderType: Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION,
-                            entity: cour,
-                            forcedType: (Renderer.WorldToScreen(bestPos)[2] ? Enum.ForcedType.None : Enum.ForcedType.Minimap)
-                        });
+                if (courierOutFountainENABLE) {
+                    if (Engine.OnceAtByKey(1, 'Courier_BestPos')) {
+                        let bestPos = GetBestCourierPos();
+                        if (bestPos) {
+                            myPlayer.PrepareUnitOrdersStructed({
+                                position: bestPos,
+                                orderType: Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION,
+                                entity: cour,
+                                forcedType: (Renderer.WorldToScreen(bestPos)[2] ? Enum.ForcedType.None : Enum.ForcedType.Minimap)
+                            });
+                        }
                     }
                 }
             }
@@ -443,22 +556,10 @@ var customUtil;
         }
     };
     RegisterScript(CustomUtility);
-})(customUtil || (customUtil = {}));
-
-
-/***/ }),
-
-/***/ 0:
-/*!******************************!*\
-  !*** multi ./src/Utility.ts ***!
-  \******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(/*! ./src/Utility.ts */"./src/Utility.ts");
+})(customUtil = exports.customUtil || (exports.customUtil = {}));
 
 
 /***/ })
 
 /******/ });
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vd2VicGFjay9ib290c3RyYXAiLCJ3ZWJwYWNrOi8vLy4vc3JjL1V0aWxpdHkudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IjtRQUFBO1FBQ0E7O1FBRUE7UUFDQTs7UUFFQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTs7UUFFQTtRQUNBOztRQUVBO1FBQ0E7O1FBRUE7UUFDQTtRQUNBOzs7UUFHQTtRQUNBOztRQUVBO1FBQ0E7O1FBRUE7UUFDQTtRQUNBO1FBQ0EsMENBQTBDLGdDQUFnQztRQUMxRTtRQUNBOztRQUVBO1FBQ0E7UUFDQTtRQUNBLHdEQUF3RCxrQkFBa0I7UUFDMUU7UUFDQSxpREFBaUQsY0FBYztRQUMvRDs7UUFFQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0EseUNBQXlDLGlDQUFpQztRQUMxRSxnSEFBZ0gsbUJBQW1CLEVBQUU7UUFDckk7UUFDQTs7UUFFQTtRQUNBO1FBQ0E7UUFDQSwyQkFBMkIsMEJBQTBCLEVBQUU7UUFDdkQsaUNBQWlDLGVBQWU7UUFDaEQ7UUFDQTtRQUNBOztRQUVBO1FBQ0Esc0RBQXNELCtEQUErRDs7UUFFckg7UUFDQTs7O1FBR0E7UUFDQTs7Ozs7Ozs7Ozs7O0FDbEZBO0FBQ0E7QUFDQSxjQUFjLHlCQUF5QjtBQUN2QztBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxLQUFLO0FBQ0w7QUFDQTtBQUNBLGlDQUFpQywrRUFBK0U7QUFDaEgscUNBQXFDLCtFQUErRTtBQUNwSDtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EsS0FBSztBQUNMO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxLQUFLO0FBQ0w7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxLQUFLO0FBQ0w7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLEtBQUs7QUFDTDtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxxQ0FBcUM7QUFDckM7QUFDQSw2QkFBNkI7QUFDN0I7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxhQUFhO0FBQ2I7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSw2QkFBNkI7QUFDN0I7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSx5QkFBeUI7QUFDekI7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxxQ0FBcUMsWUFBWTtBQUNqRDtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLHlCQUF5QjtBQUN6QjtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxDQUFDLGdDQUFnQyIsImZpbGUiOiJtYWluLmpzIiwic291cmNlUm9vdCI6IiJ9
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vd2VicGFjay9ib290c3RyYXAiLCJ3ZWJwYWNrOi8vLy4vc3JjL1V0aWxpdHkudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IjtRQUFBO1FBQ0E7O1FBRUE7UUFDQTs7UUFFQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTs7UUFFQTtRQUNBOztRQUVBO1FBQ0E7O1FBRUE7UUFDQTtRQUNBOzs7UUFHQTtRQUNBOztRQUVBO1FBQ0E7O1FBRUE7UUFDQTtRQUNBO1FBQ0EsMENBQTBDLGdDQUFnQztRQUMxRTtRQUNBOztRQUVBO1FBQ0E7UUFDQTtRQUNBLHdEQUF3RCxrQkFBa0I7UUFDMUU7UUFDQSxpREFBaUQsY0FBYztRQUMvRDs7UUFFQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0EseUNBQXlDLGlDQUFpQztRQUMxRSxnSEFBZ0gsbUJBQW1CLEVBQUU7UUFDckk7UUFDQTs7UUFFQTtRQUNBO1FBQ0E7UUFDQSwyQkFBMkIsMEJBQTBCLEVBQUU7UUFDdkQsaUNBQWlDLGVBQWU7UUFDaEQ7UUFDQTtRQUNBOztRQUVBO1FBQ0Esc0RBQXNELCtEQUErRDs7UUFFckg7UUFDQTs7O1FBR0E7UUFDQTs7Ozs7Ozs7Ozs7OztBQ2xGYTtBQUNiLDhDQUE4QyxjQUFjO0FBQzVEO0FBQ0E7QUFDQTtBQUNBLGNBQWMseUJBQXlCO0FBQ3ZDO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxLQUFLO0FBQ0w7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EsaUNBQWlDLCtFQUErRTtBQUNoSCxxQ0FBcUMsK0VBQStFO0FBQ3BIO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EsS0FBSztBQUNMO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0Esc0JBQXNCLHlFQUF5RTtBQUMvRjtBQUNBO0FBQ0E7QUFDQSwwQkFBMEIseUVBQXlFO0FBQ25HO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EsS0FBSztBQUNMO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxLQUFLO0FBQ0w7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxLQUFLO0FBQ0w7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLEtBQUs7QUFDTDtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLHFDQUFxQztBQUNyQztBQUNBLDZCQUE2QjtBQUM3QjtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLGFBQWE7QUFDYjtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSw2QkFBNkI7QUFDN0I7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EsNkJBQTZCO0FBQzdCO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxxQ0FBcUMsWUFBWTtBQUNqRDtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLHlCQUF5QjtBQUN6QjtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxDQUFDLDZEQUE2RCIsImZpbGUiOiJVdGlsaXR5LmpzIiwic291cmNlUm9vdCI6IiJ9
