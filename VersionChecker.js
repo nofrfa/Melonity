@@ -1,4 +1,4 @@
-const installedVersionAntiError = '1.0.8';
+const installedVersionAntiError = '1.0.9';
 var VersionChecker = {};
 (function () {
     var PATH = ['Custom Scripts'];
@@ -30,7 +30,7 @@ var VersionChecker = {};
                 Menu.GetFolder(PATH).SetTip('Update required', 'en').SetTip('Требуется обновление', 'ru');
                 UpdaterInfo.SetNameLocale('ru', 'Необходимо обновить скрипты!').SetNameLocale('en', 'The scripts need to be updated!');
                 Menu.AddButton(PATH, 'How to update', function () {
-                    Engine.OpenURL('https://www.youtube.com/watch?v=IZkDPdQVXHE');
+                    Engine.OpenURL('https://www.youtube.com/watch?v=Zs6CnKs-7q0');
                 }).SetNameLocale('ru', 'Как обновить').SetOrdering(1000);
             }
             msg(requireUpdate);
