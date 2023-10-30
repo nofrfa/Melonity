@@ -192,7 +192,7 @@ var abuse_Muerta;
     }
     let target;
     Abuse_Muerta.OnUpdate = () => {
-        if (!ENABLE || !myHero || !myHero.IsAlive())
+        if (!ENABLE || !myHero || !myHero.IsAlive() || myHero.HasState(Enum.ModifierState.MODIFIER_STATE_PASSIVES_DISABLED))
             return;
         let lvl = myHero.GetAbilityByIndex(2).GetLevel();
         if (lvl == 0 || lvl < WorkAfterLVL)
