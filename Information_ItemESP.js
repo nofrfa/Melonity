@@ -77,11 +77,11 @@
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "/";
+/******/ 	__webpack_require__.p = "";
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/Information_ItemESP.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -93,9 +93,9 @@
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-let itemESP = {};
-var ItemsESP;
-(function (ItemsESP) {
+let itemESPCustom = {};
+var ItemsESPCustom;
+(function (ItemsESPCustom) {
     class physItem {
         constructor(item, index, position) {
             this.item = item;
@@ -105,33 +105,32 @@ var ItemsESP;
         }
     }
     let itemsList = [];
-    const path = ['Custom Scripts', 'Information'];
-    let myHero, myPlayer;
+    const path = ['Custom Scripts', 'Information', 'Item ESP'];
+    let myHero;
     let wardPanelX = Config.ReadInt('ItemEsp', 'x', 500);
     let wardPanelY = Config.ReadInt('ItemEsp', 'y', 500);
     let dragging = false;
     let previousCursorPosX = 0;
     let previousCursorPosY = 0;
     let previousTickMouseState = false;
-    let previousTickMouseStateRight = false;
     let scale = Renderer.GetScreenSize()[1] / 1080;
     let panelHidden = false;
-    let font = Renderer.LoadFont('Arial', 20, Enum.FontWeight.LIGHT, Enum.FontFlags.OUTLINE);
-    let fontTitle = Renderer.LoadFont('Arial', 16, Enum.FontWeight.BOLD);
-    let fontHidden = Renderer.LoadFont('Arial', 18, Enum.FontWeight.BOLD);
-    let fontHiddenDown = Renderer.LoadFont('Arial', 15, Enum.FontWeight.BOLD);
-    let panelImg = Renderer.LoadImage('panorama/images/hud/reborn/items_icon_psd.vtex_c');
-    let ENABLE = Menu.AddToggle([...path, 'Item ESP'], 'Enable', false)
+    const font = Renderer.LoadFont('Arial', 20 * scale, Enum.FontWeight.LIGHT, Enum.FontFlags.OUTLINE);
+    const fontTitle = Renderer.LoadFont('Arial', 16 * scale, Enum.FontWeight.BOLD);
+    const fontHidden = Renderer.LoadFont('Arial', 18 * scale, Enum.FontWeight.BOLD);
+    const fontHiddenDown = Renderer.LoadFont('Arial', 15 * scale, Enum.FontWeight.BOLD);
+    const panelImg = Renderer.LoadImage('panorama/images/hud/reborn/items_icon_psd.vtex_c');
+    let ENABLE = Menu.AddToggle(path, 'Enable', false)
         .SetNameLocale('ru', 'Включить')
         .OnChange(state => {
         ENABLE = state.newValue;
     })
         .GetValue();
-    Menu.GetFolder([...path, 'Item ESP'])
+    Menu.GetFolder(path)
         .SetImage('panorama/images/battlepass/ti7/campaign/staticon_items_psd.vtex_c') //panorama/images/hud/reborn/items_icon_psd.vtex_c
         .SetTip('Скрипт будет отрисовывать положение предметов\n[!!!] Предметы могут не оказаться на указанном месте, если были подобраны в тумане войны', 'ru')
-        .SetTip('', 'en');
-    let RenderPanel = Menu.AddToggle([...path, 'Item ESP'], 'Render Panel', true)
+        .SetTip('The script will draw the position of items\\n[!!!] Items may not be in the specified place if they were picked up in the fog of war', 'en');
+    let RenderPanel = Menu.AddToggle(path, 'Render Panel', true)
         .SetNameLocale('ru', 'Отображать панель')
         .OnChange(state => {
         RenderPanel = state.newValue;
@@ -140,14 +139,14 @@ var ItemsESP;
         .SetTip('На данной панели будут отображаться все лежачие предметы\nКликнув на предмет - камера переместиться на его позицию', 'ru')
         .SetTip('All recumbent objects will be displayed on this panel\nBy clicking on the object - the camera will move to its position', 'en')
         .GetValue();
-    let PanelMoveOpt = Menu.AddToggle([...path, 'Item ESP'], 'Move Panel', false)
+    let PanelMoveOpt = Menu.AddToggle(path, 'Move Panel', false)
         .SetNameLocale('ru', 'Перемещение панель')
         .OnChange(state => {
         PanelMove = state.newValue;
     });
     let PanelMove = PanelMoveOpt.GetValue();
     PanelMoveOpt.SetHidden(!RenderPanel);
-    itemESP.OnUpdate = () => {
+    itemESPCustom.OnUpdate = () => {
         if (!myHero || !ENABLE)
             return;
         if (Engine.OnceAtByKey(0.5, 'ItemESP')) {
@@ -158,7 +157,7 @@ var ItemsESP;
             }
         }
     };
-    itemESP.OnDraw = () => {
+    itemESPCustom.OnDraw = () => {
         if (!myHero || !ENABLE)
             return;
         //Рендер предметов
@@ -173,22 +172,23 @@ var ItemsESP;
             }
         });
         Renderer.PopDrawOptions();
+        // @Deprecated
         //Рендер панели
         if (RenderPanel) {
             let [currentCursorPosX, currentCursorPosY] = Input.GetCursorPos();
             let [screenSizeX, screenSizeY] = Renderer.GetScreenSize();
             const sizeScale = scale;
-            let [textW, textH] = Renderer.GetTextSize(font, '7:00');
+            let [textW] = Renderer.GetTextSize(font, '7:00');
             let wardCounts = itemsList.length;
             let height = Math.ceil(65 + (panelHidden ? -40 : (Number((wardCounts / 5.1).toString().split('.', 1)) * 38)));
             let panelText = 'Items List';
-            let [tSizeX, tSizeY] = Renderer.GetTextSize(fontTitle, panelText);
+            let [tSizeX] = Renderer.GetTextSize(fontTitle, panelText);
             const borderOffset = 0;
-            let width = Math.max(Math.ceil(textW * sizeScale), tSizeX + borderOffset * 2 + 142);
+            let width = Math.max(Math.ceil(textW * sizeScale), tSizeX + borderOffset * 2 + 142 * sizeScale);
             // клемпаем позицию окна без изменения конфига что бы окно не смещалось
             let borderCalcSize = borderOffset + 1;
             let curX = Math.max(0, Math.min(screenSizeX - width, wardPanelX - borderCalcSize));
-            let curY = Math.max(0, Math.min(screenSizeY - height, wardPanelY - borderCalcSize + 6));
+            let curY = Math.max(0, Math.min(screenSizeY - height, wardPanelY - borderCalcSize + 6 * sizeScale));
             if (curX + width > screenSizeX) {
                 curX = screenSizeX - (curX - screenSizeX);
             }
@@ -203,10 +203,10 @@ var ItemsESP;
             }
             //верх полоска
             Renderer.SetDrawColor(255, 20, 105, 255);
-            Renderer.DrawFilledRect(curX, curY - 3, 200, 20, 8);
-            //основной фон
+            Renderer.DrawFilledRect(curX, curY - 4, 200, 4, 4, Enum.RoundCorners.Top);
+            // //основной фон
             Renderer.SetDrawColor(28, 31, 38, 255);
-            Renderer.DrawFilledRect(curX, curY, 200, panelHidden ? 22 : height, 8);
+            Renderer.DrawFilledRect(curX, curY, 200, panelHidden ? 22 : height, 8, Enum.RoundCorners.Bottom);
             if (!panelHidden) {
                 //полоска вверху
                 Renderer.SetDrawColor(50, 54, 63, 255);
@@ -250,7 +250,7 @@ var ItemsESP;
                 Renderer.SetDrawColor(255, 20, 105, 200);
                 Renderer.DrawText(fontHiddenDown, curX + 180, curY + 3, 'v');
             }
-            if (Input.IsCursorInRect(curX + 176, curY + 3, 15, 15) && Input.IsKeyDownOnce(Enum.ButtonCode.MOUSE_LEFT)) {
+            if (Input.IsKeyDownOnce(Enum.ButtonCode.MOUSE_LEFT) && Input.IsCursorInRect(curX + 176, curY + 3, 15, 15)) {
                 panelHidden = !panelHidden;
             }
             //передвижение панели
@@ -285,36 +285,21 @@ var ItemsESP;
                 }
             }
             previousTickMouseState = Input.IsKeyDown(Enum.ButtonCode.MOUSE_LEFT);
-            previousTickMouseStateRight = Input.IsKeyDown(Enum.ButtonCode.MOUSE_RIGHT);
             [previousCursorPosX, previousCursorPosY] = [currentCursorPosX, currentCursorPosY];
         }
     };
-    itemESP.OnScriptLoad = itemESP.OnGameStart = () => {
+    itemESPCustom.OnScriptLoad = itemESPCustom.OnGameStart = () => {
         myHero = EntitySystem.GetLocalHero();
-        if (myHero) {
-            myPlayer = EntitySystem.GetLocalPlayer();
-        }
     };
-    itemESP.OnGameEnd = () => {
+    itemESPCustom.OnGameEnd = () => {
         itemsList = [];
         myHero = null;
     };
-    RegisterScript(itemESP);
-})(ItemsESP || (ItemsESP = {}));
-
-
-/***/ }),
-
-/***/ 0:
-/*!******************************************!*\
-  !*** multi ./src/Information_ItemESP.ts ***!
-  \******************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(/*! C:\Users\MayTo\AppData\Roaming\Melonity\scripts\src\Information_ItemESP.ts */"./src/Information_ItemESP.ts");
+    RegisterScript(itemESPCustom);
+})(ItemsESPCustom || (ItemsESPCustom = {}));
 
 
 /***/ })
 
 /******/ });
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vd2VicGFjay9ib290c3RyYXAiLCJ3ZWJwYWNrOi8vLy4vc3JjL0luZm9ybWF0aW9uX0l0ZW1FU1AudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IjtRQUFBO1FBQ0E7O1FBRUE7UUFDQTs7UUFFQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTs7UUFFQTtRQUNBOztRQUVBO1FBQ0E7O1FBRUE7UUFDQTtRQUNBOzs7UUFHQTtRQUNBOztRQUVBO1FBQ0E7O1FBRUE7UUFDQTtRQUNBO1FBQ0EsMENBQTBDLGdDQUFnQztRQUMxRTtRQUNBOztRQUVBO1FBQ0E7UUFDQTtRQUNBLHdEQUF3RCxrQkFBa0I7UUFDMUU7UUFDQSxpREFBaUQsY0FBYztRQUMvRDs7UUFFQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7UUFDQTtRQUNBO1FBQ0EseUNBQXlDLGlDQUFpQztRQUMxRSxnSEFBZ0gsbUJBQW1CLEVBQUU7UUFDckk7UUFDQTs7UUFFQTtRQUNBO1FBQ0E7UUFDQSwyQkFBMkIsMEJBQTBCLEVBQUU7UUFDdkQsaUNBQWlDLGVBQWU7UUFDaEQ7UUFDQTtRQUNBOztRQUVBO1FBQ0Esc0RBQXNELCtEQUErRDs7UUFFckg7UUFDQTs7O1FBR0E7UUFDQTs7Ozs7Ozs7Ozs7O0FDbEZBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EsS0FBSztBQUNMO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EsS0FBSztBQUNMO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EsS0FBSztBQUNMO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxTQUFTO0FBQ1Q7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLCtCQUErQixzQkFBc0I7QUFDckQ7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLENBQUMsd0NBQXdDIiwiZmlsZSI6IkluZm9ybWF0aW9uX0l0ZW1FU1AuanMiLCJzb3VyY2VSb290IjoiIn0=
