@@ -3,7 +3,7 @@
 
 <h1 align="center" id="title"><a href="https://melonity.ru/en">Nemesis</a> - Custom scripts for Melonity</h1>
 
-<h2 id="description">Description</h2>
+<h2 id="description">📋 Description</h2>
 
 Features a wide variety of scripts. 
 
