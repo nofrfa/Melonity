@@ -1,7 +1,11 @@
 
 <p align="center"><img width="256.5" height="256" src="https://github.com/nofrfa/Melonity/assets/72886464/dab6f79b-f890-468d-adbe-33b8369379b5" alt="project-image"></p>
 
-<h1 align="center" id="title"><a href="https://melonity.ru/en">Nemesis</a> - Custom scripts for Melonity</h1>
+<h1 align="center" id="title"><a href="https://melonity.ru/en">Nemesis</a> - Custom scripts for Melonity 
+  <a href="https://github.com/nofrfa/Melonity/stargazers">
+    <img src="https://img.shields.io/github/stars/nofrfa/Melonity.svg?style=flat" alt="GitHub stars">
+  </a>
+</h1>
 
 <h2 id="description">📋 Description</h2>
 
