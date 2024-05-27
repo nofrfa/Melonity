@@ -1,4 +1,4 @@
-const installedVersionAntiError = '1.0.16';
+const installedVersionAntiError = '1.0.17';
 var VersionChecker = {};
 (function () {
     var PATH = ['Custom Scripts'];
@@ -30,7 +30,7 @@ var VersionChecker = {};
                 Menu.GetFolder(PATH).SetTip('Update required', 'en').SetTip('Требуется обновление', 'ru');
                 UpdaterInfo.SetNameLocale('ru', 'Необходимо обновить скрипты!').SetNameLocale('en', 'The scripts need to be updated!');
                 Menu.AddButton(PATH, 'How to update', function () {
-                    Engine.OpenURL('https://www.youtube.com/watch?v=Zs6CnKs-7q0');
+                    Engine.OpenURL('https://t.me/NemesisScripts/14');
                 }).SetNameLocale('ru', 'Как обновить').SetOrdering(1000);
             }
             msg(requireUpdate);
